@@ -1,0 +1,58 @@
+import type { Category } from '@/types';
+
+export const categories: Category[] = [
+  {
+    id: 'cat-1',
+    slug: 'electronics',
+    name: 'Electronics',
+    description: 'Cutting-edge gadgets and tech essentials',
+    image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&q=80',
+    productCount: 42,
+    color: 'from-blue-500 to-indigo-600',
+  },
+  {
+    id: 'cat-2',
+    slug: 'clothing',
+    name: 'Clothing',
+    description: 'Modern fashion for every occasion',
+    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80',
+    productCount: 87,
+    color: 'from-pink-500 to-rose-600',
+  },
+  {
+    id: 'cat-3',
+    slug: 'footwear',
+    name: 'Footwear',
+    description: 'Step into style and comfort',
+    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80',
+    productCount: 36,
+    color: 'from-orange-500 to-amber-600',
+  },
+  {
+    id: 'cat-4',
+    slug: 'home-living',
+    name: 'Home & Living',
+    description: 'Beautiful pieces for your space',
+    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80',
+    productCount: 54,
+    color: 'from-emerald-500 to-teal-600',
+  },
+  {
+    id: 'cat-5',
+    slug: 'beauty',
+    name: 'Beauty',
+    description: 'Skincare, makeup and wellness',
+    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&q=80',
+    productCount: 29,
+    color: 'from-purple-500 to-violet-600',
+  },
+  {
+    id: 'cat-6',
+    slug: 'sports',
+    name: 'Sports',
+    description: 'Performance gear for athletes',
+    image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&q=80',
+    productCount: 48,
+    color: 'from-cyan-500 to-sky-600',
+  },
+];
