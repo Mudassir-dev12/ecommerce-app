@@ -1,7 +1,7 @@
 /**
  * lib/api.ts
  *
- * API layer — dynamically queries Supabase PostgreSQL database with fallback to local mock data.
+ * API layer — dynamically queries Supabase PostgreSQL database with fallback to local persistent storage.
  */
 
 import { supabase } from '@/lib/supabase';
@@ -22,8 +22,41 @@ import type {
 } from '@/types';
 import { delay } from '@/lib/utils';
 
-// Local product store fallback
-let localProductsStore: Product[] = [...mockProducts];
+const STORAGE_KEY = 'ecommerce_products_data_v3';
+
+// Helper to get local products (with localStorage persistence)
+function getLocalProducts(): Product[] {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading from localStorage:', e);
+    }
+  }
+  return [];
+}
+
+
+
+// Helper to save local products to localStorage
+function saveLocalProducts(products: Product[]): void {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    } catch (e) {
+      console.warn('Error writing to localStorage:', e);
+    }
+  }
+}
+
+// In-memory fallback array initialized from localStorage or mock data
+let localProductsStore: Product[] = getLocalProducts();
 
 // Helper Mappers (PostgreSQL snake_case <-> TypeScript camelCase)
 function mapProduct(row: any): Product {
@@ -141,26 +174,28 @@ export async function getProducts(
 
     const { data, count, error } = await query;
 
-    if (!error && data && data.length > 0) {
+    if (!error && data !== null) {
       const dbProducts = data.map(mapProduct);
-      // Synchronize db products into local store
-      localProductsStore = dbProducts;
-      const total = count || dbProducts.length;
+      if (!filters.category && !filters.search && filters.minPrice === undefined && filters.maxPrice === undefined) {
+        localProductsStore = dbProducts;
+        saveLocalProducts(dbProducts);
+      }
+      const total = count !== null && count !== undefined ? count : dbProducts.length;
       return {
         products: dbProducts,
         pagination: {
           page,
           perPage,
           total,
-          totalPages: Math.ceil(total / perPage),
+          totalPages: Math.max(1, Math.ceil(total / perPage)),
         },
       };
     }
   } catch (err) {
-    console.warn('Supabase fetch failed, falling back to local products store:', err);
+    console.warn('Supabase fetch failed, using local product store:', err);
   }
 
-  // Fallback to local products store
+  // Fallback to local products store ONLY when Supabase query fails
   let result = [...localProductsStore];
   if (filters.category) result = result.filter((p) => p.categorySlug === filters.category);
   if (filters.minPrice !== undefined) result = result.filter((p) => p.price >= filters.minPrice!);
@@ -184,25 +219,40 @@ export async function getProducts(
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
     const { data, error } = await supabase.from('products').select('*').eq('slug', slug).single();
-    if (!error && data) return mapProduct(data);
+    if (!error) {
+      return data ? mapProduct(data) : null;
+    }
   } catch (e) {}
-  return localProductsStore.find((p) => p.slug === slug || p.id === slug) ?? null;
+  const list = getLocalProducts();
+  return list.find((p) => p.slug === slug || p.id === slug) ?? null;
 }
 
 export async function getFeaturedProducts(limit = 8): Promise<Product[]> {
   try {
     const { data, error } = await supabase.from('products').select('*').eq('is_featured', true).limit(limit);
-    if (!error && data && data.length > 0) return data.map(mapProduct);
+    if (!error && data) {
+      if (data.length > 0) return data.map(mapProduct);
+      const { data: allData, error: allErr } = await supabase.from('products').select('*').limit(limit);
+      if (!allErr && allData) return allData.map(mapProduct);
+    }
   } catch (e) {}
-  return localProductsStore.filter((p) => p.isFeatured).slice(0, limit);
+  const list = getLocalProducts();
+  const featured = list.filter((p) => p.isFeatured);
+  if (featured.length > 0) return featured.slice(0, limit);
+  return list.slice(0, limit);
 }
 
 export async function getBestSellers(limit = 8): Promise<Product[]> {
   try {
     const { data, error } = await supabase.from('products').select('*').eq('is_best_seller', true).limit(limit);
-    if (!error && data && data.length > 0) return data.map(mapProduct);
+    if (!error && data) {
+      if (data.length > 0) return data.map(mapProduct);
+      const { data: allData, error: allErr } = await supabase.from('products').select('*').limit(limit);
+      if (!allErr && allData) return allData.map(mapProduct);
+    }
   } catch (e) {}
-  return localProductsStore.filter((p) => p.isBestSeller).slice(0, limit);
+  const list = getLocalProducts();
+  return list.filter((p) => p.isBestSeller).slice(0, limit);
 }
 
 export async function getRelatedProducts(product: Product, limit = 4): Promise<Product[]> {
@@ -213,9 +263,10 @@ export async function getRelatedProducts(product: Product, limit = 4): Promise<P
       .eq('category_slug', product.categorySlug)
       .neq('id', product.id)
       .limit(limit);
-    if (!error && data && data.length > 0) return data.map(mapProduct);
+    if (!error && data) return data.map(mapProduct);
   } catch (e) {}
-  return localProductsStore.filter((p) => p.categorySlug === product.categorySlug && p.id !== product.id).slice(0, limit);
+  const list = getLocalProducts();
+  return list.filter((p) => p.categorySlug === product.categorySlug && p.id !== product.id).slice(0, limit);
 }
 
 export async function searchProducts(query: string, limit = 20): Promise<Product[]> {
@@ -225,19 +276,39 @@ export async function searchProducts(query: string, limit = 20): Promise<Product
       .select('*')
       .or(`name.ilike.%${query}%,brand.ilike.%${query}%,description.ilike.%${query}%`)
       .limit(limit);
-    if (!error && data && data.length > 0) return data.map(mapProduct);
+    if (!error && data) return data.map(mapProduct);
   } catch (e) {}
-  return localProductsStore.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())).slice(0, limit);
+  const list = getLocalProducts();
+  return list.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())).slice(0, limit);
 }
 
 // ─── Categories ───────────────────────────────────────────────────────────
 
 export async function getCategories(): Promise<Category[]> {
+  let categoriesList = mockCategories;
   try {
     const { data, error } = await supabase.from('categories').select('*');
-    if (!error && data && data.length > 0) return data.map(mapCategory);
+    if (!error && data && data.length > 0) {
+      categoriesList = data.map(mapCategory);
+    }
   } catch (e) {}
-  return mockCategories;
+
+  try {
+    const { products } = await getProducts({}, 'featured', 1, 1000);
+    return categoriesList.map((cat) => {
+      const count = products.filter(
+        (p) =>
+          p.categorySlug === cat.slug ||
+          p.category.toLowerCase() === cat.name.toLowerCase()
+      ).length;
+      return {
+        ...cat,
+        productCount: count,
+      };
+    });
+  } catch (e) {
+    return categoriesList;
+  }
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
@@ -294,6 +365,22 @@ export async function createProduct(productData: Partial<Product>): Promise<Prod
     productData.slug ||
     (productData.name ? productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : id);
 
+  const stockCount = Number(productData.stockCount) || 0;
+  const inStock = productData.inStock !== undefined ? Boolean(productData.inStock) : stockCount > 0;
+  const categorySlug = productData.categorySlug || 'electronics';
+  const categoryName = productData.category || 'Electronics';
+
+  // Ensure category exists in categories table to satisfy FK constraint
+  try {
+    await supabase.from('categories').upsert([
+      {
+        id: `cat-${categorySlug}`,
+        slug: categorySlug,
+        name: categoryName,
+      }
+    ], { onConflict: 'slug' });
+  } catch (e) {}
+
   const payload = {
     id,
     slug,
@@ -304,8 +391,8 @@ export async function createProduct(productData: Partial<Product>): Promise<Prod
     price: Number(productData.price) || 0,
     original_price: productData.originalPrice ? Number(productData.originalPrice) : null,
     discount: productData.discount ? Number(productData.discount) : null,
-    category: productData.category || 'Electronics',
-    category_slug: productData.categorySlug || 'electronics',
+    category: categoryName,
+    category_slug: categorySlug,
     tags: productData.tags || [],
     images: productData.images && productData.images.length > 0 ? productData.images : [
       { id: `img-${Date.now()}`, url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80', alt: productData.name || 'Product Image', isPrimary: true }
@@ -313,60 +400,54 @@ export async function createProduct(productData: Partial<Product>): Promise<Prod
     variants: productData.variants || [],
     rating: Number(productData.rating) || 5.0,
     review_count: Number(productData.reviewCount) || 1,
-    in_stock: productData.inStock !== undefined ? Boolean(productData.inStock) : true,
-    stock_count: Number(productData.stockCount) || 10,
+    in_stock: inStock && stockCount > 0,
+    stock_count: stockCount,
     is_new: Boolean(productData.isNew),
     is_featured: Boolean(productData.isFeatured),
     is_best_seller: Boolean(productData.isBestSeller),
     sku: productData.sku || `SKU-${Date.now()}`,
   };
 
-  try {
-    const { data, error } = await supabase.from('products').insert([payload]).select().single();
-    if (!error && data) {
-      const created = mapProduct(data);
-      localProductsStore.unshift(created);
-      return created;
-    } else if (error) {
-      console.warn('Supabase DB product creation error:', error.message);
-    }
-  } catch (err) {
-    console.warn('Supabase connection error during creation:', err);
+  const { data, error } = await supabase.from('products').upsert([payload], { onConflict: 'id' }).select();
+
+  if (error) {
+    console.error('Supabase product creation error:', error);
+    throw new Error(`Database error: ${error.message}`);
   }
 
-  // Local fallback object
-  const newProduct: Product = {
-    id,
-    slug,
-    name: payload.name,
-    brand: payload.brand,
-    description: payload.description,
-    longDescription: payload.long_description,
-    price: payload.price,
-    originalPrice: payload.original_price ? payload.original_price : undefined,
-    discount: payload.discount ? payload.discount : undefined,
-    category: payload.category,
-    categorySlug: payload.category_slug,
-    tags: payload.tags,
-    images: payload.images,
-    variants: payload.variants,
-    rating: payload.rating,
-    reviewCount: payload.review_count,
-    inStock: payload.in_stock,
-    stockCount: payload.stock_count,
-    isNew: payload.is_new,
-    isFeatured: payload.is_featured,
-    isBestSeller: payload.is_best_seller,
-    createdAt: new Date().toISOString(),
-    sku: payload.sku,
-  };
+  if (!data || data.length === 0) {
+    throw new Error('Database error: Failed to save product to Supabase');
+  }
 
-  localProductsStore.unshift(newProduct);
-  return newProduct;
+  const createdProduct = mapProduct(data[0]);
+
+  const currentList = getLocalProducts();
+  const updatedList = [createdProduct, ...currentList.filter(p => p.id !== id)];
+  localProductsStore = updatedList;
+  saveLocalProducts(updatedList);
+
+  return createdProduct;
 }
 
 export async function updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
-  const payload: any = {};
+  const stockCount = updates.stockCount !== undefined ? Number(updates.stockCount) : undefined;
+  const inStock = updates.inStock !== undefined ? Boolean(updates.inStock) : (stockCount !== undefined ? stockCount > 0 : undefined);
+  const categorySlug = updates.categorySlug || undefined;
+  const categoryName = updates.category || undefined;
+
+  if (categorySlug) {
+    try {
+      await supabase.from('categories').upsert([
+        {
+          id: `cat-${categorySlug}`,
+          slug: categorySlug,
+          name: categoryName || categorySlug,
+        }
+      ], { onConflict: 'slug' });
+    } catch (e) {}
+  }
+
+  const payload: any = { id };
   if (updates.name !== undefined) payload.name = updates.name;
   if (updates.slug !== undefined) payload.slug = updates.slug;
   if (updates.brand !== undefined) payload.brand = updates.brand;
@@ -375,62 +456,73 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
   if (updates.price !== undefined) payload.price = Number(updates.price);
   if (updates.originalPrice !== undefined) payload.original_price = updates.originalPrice ? Number(updates.originalPrice) : null;
   if (updates.discount !== undefined) payload.discount = updates.discount ? Number(updates.discount) : null;
-  if (updates.category !== undefined) payload.category = updates.category;
-  if (updates.categorySlug !== undefined) payload.category_slug = updates.categorySlug;
+  if (categoryName !== undefined) payload.category = categoryName;
+  if (categorySlug !== undefined) payload.category_slug = categorySlug;
   if (updates.tags !== undefined) payload.tags = updates.tags;
   if (updates.images !== undefined) payload.images = updates.images;
   if (updates.variants !== undefined) payload.variants = updates.variants;
   if (updates.rating !== undefined) payload.rating = Number(updates.rating);
   if (updates.reviewCount !== undefined) payload.review_count = Number(updates.reviewCount);
-  if (updates.inStock !== undefined) payload.in_stock = Boolean(updates.inStock);
-  if (updates.stockCount !== undefined) payload.stock_count = Number(updates.stockCount);
   if (updates.isNew !== undefined) payload.is_new = Boolean(updates.isNew);
   if (updates.isFeatured !== undefined) payload.is_featured = Boolean(updates.isFeatured);
   if (updates.isBestSeller !== undefined) payload.is_best_seller = Boolean(updates.isBestSeller);
   if (updates.sku !== undefined) payload.sku = updates.sku;
+  if (stockCount !== undefined) payload.stock_count = stockCount;
+  if (inStock !== undefined) payload.in_stock = inStock;
 
-  try {
-    const { data, error } = await supabase.from('products').update(payload).eq('id', id).select().single();
-    if (!error && data) {
-      const updated = mapProduct(data);
-      const index = localProductsStore.findIndex((p) => p.id === id);
-      if (index > -1) localProductsStore[index] = updated;
-      return updated;
-    } else if (error) {
-      console.warn('Supabase DB product update warning:', error.message);
+  let updatedProduct: Product | null = null;
+
+  // Attempt update by ID first
+  const { data, error } = await supabase.from('products').update(payload).eq('id', id).select();
+  if (!error && data && data.length > 0) {
+    updatedProduct = mapProduct(data[0]);
+  } else {
+    // Attempt update by slug if ID matching returned 0 rows
+    const { data: slugData, error: slugError } = await supabase
+      .from('products')
+      .update(payload)
+      .eq('slug', id)
+      .select();
+    if (!slugError && slugData && slugData.length > 0) {
+      updatedProduct = mapProduct(slugData[0]);
+    } else {
+      // Fall back to upsert by payload (guarantees update or insert in Supabase DB)
+      const { data: upsertData, error: upsertError } = await supabase.from('products').upsert([payload], { onConflict: 'id' }).select();
+      if (!upsertError && upsertData && upsertData.length > 0) {
+        updatedProduct = mapProduct(upsertData[0]);
+      } else {
+        const errMsg = error?.message || slugError?.message || upsertError?.message || 'Database product update failed';
+        throw new Error(`Database error: ${errMsg}`);
+      }
     }
-  } catch (err) {
-    console.warn('Supabase connection error during update:', err);
   }
 
-  // Local fallback update
-  const index = localProductsStore.findIndex((p) => p.id === id);
-  if (index === -1) {
-    throw new Error(`Product with ID ${id} not found.`);
+  const currentList = getLocalProducts();
+  const index = currentList.findIndex((p) => p.id === id || p.slug === id);
+  if (index > -1) {
+    currentList[index] = updatedProduct;
+  } else {
+    currentList.unshift(updatedProduct);
   }
+  localProductsStore = currentList;
+  saveLocalProducts(currentList);
 
-  const existing = localProductsStore[index];
-  const updatedProduct: Product = {
-    ...existing,
-    ...updates,
-    price: updates.price !== undefined ? Number(updates.price) : existing.price,
-    stockCount: updates.stockCount !== undefined ? Number(updates.stockCount) : existing.stockCount,
-  };
-
-  localProductsStore[index] = updatedProduct;
   return updatedProduct;
 }
 
 export async function deleteProduct(id: string): Promise<boolean> {
-  try {
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) {
-      console.warn('Supabase DB product deletion warning:', error.message);
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) {
+    const { error: slugErr } = await supabase.from('products').delete().eq('slug', id);
+    if (slugErr) {
+      throw new Error(`Database error: ${error.message}`);
     }
-  } catch (err) {
-    console.warn('Supabase connection error during deletion:', err);
   }
 
-  localProductsStore = localProductsStore.filter((p) => p.id !== id);
+  const currentList = getLocalProducts();
+  const updatedList = currentList.filter((p) => p.id !== id && p.slug !== id);
+  localProductsStore = updatedList;
+  saveLocalProducts(updatedList);
+
   return true;
 }

@@ -47,9 +47,11 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
     );
   };
 
+  const isAvailable = product.inStock && product.stockCount > 0;
+
   const handleAddToCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!product.inStock) {
+    if (!isAvailable) {
       toast('Sorry, this product is currently out of stock.', 'error');
       return;
     }
@@ -154,11 +156,11 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
                   onClick={handleAddToCartClick}
                   variant="primary"
                   size="sm"
-                  disabled={!product.inStock}
+                  disabled={!isAvailable}
                   className="gap-1.5"
                 >
                   <ShoppingBag className="h-4 w-4" />
-                  <span>{product.inStock ? 'Add' : 'Out of Stock'}</span>
+                  <span>{isAvailable ? 'Add' : 'Out of Stock'}</span>
                 </Button>
               )}
             </div>
@@ -245,11 +247,11 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
             onClick={handleAddToCartClick}
             variant="primary"
             size="sm"
-            disabled={!product.inStock}
+            disabled={!isAvailable}
             className="h-9 px-3.5 text-xs font-semibold gap-1"
           >
             <ShoppingBag className="h-3.5 w-3.5" />
-            <span>Add</span>
+            <span>{isAvailable ? 'Add' : 'Out of Stock'}</span>
           </Button>
         )}
       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   getProducts,
   getCategories,
@@ -30,7 +31,9 @@ import {
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -168,15 +171,15 @@ export default function AdminDashboardPage() {
 
       if (editingProduct) {
         const updated = await updateProduct(editingProduct.id, payload);
-        setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
         showToast(`Product "${updated.name}" updated successfully!`);
       } else {
         const created = await createProduct(payload);
-        setProducts((prev) => [created, ...prev]);
         showToast(`Product "${created.name}" created successfully!`);
       }
 
       setIsModalOpen(false);
+      await fetchAdminData();
+      router.refresh();
     } catch (err: any) {
       showToast(err.message || 'Operation failed', 'error');
     } finally {
@@ -190,8 +193,9 @@ export default function AdminDashboardPage() {
     setDeletingId(id);
     try {
       await deleteProduct(id);
-      setProducts((prev) => prev.filter((p) => p.id !== id));
       showToast(`Product "${name}" deleted from database.`);
+      await fetchAdminData();
+      router.refresh();
     } catch (err: any) {
       showToast(err.message || 'Failed to delete product', 'error');
     } finally {

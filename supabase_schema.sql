@@ -89,59 +89,47 @@ ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- DROP OLD POLICIES IF THEY EXIST
-DROP POLICY IF EXISTS "Allow public read access to categories" ON public.categories;
-DROP POLICY IF EXISTS "Allow public insert access to categories" ON public.categories;
-DROP POLICY IF EXISTS "Allow public update access to categories" ON public.categories;
 DROP POLICY IF EXISTS "Public all categories" ON public.categories;
 DROP POLICY IF EXISTS "Allow public select categories" ON public.categories;
 DROP POLICY IF EXISTS "Allow admin insert categories" ON public.categories;
 DROP POLICY IF EXISTS "Allow admin update categories" ON public.categories;
 DROP POLICY IF EXISTS "Allow admin delete categories" ON public.categories;
 
-DROP POLICY IF EXISTS "Allow public read access to products" ON public.products;
-DROP POLICY IF EXISTS "Allow public insert access to products" ON public.products;
-DROP POLICY IF EXISTS "Allow public update access to products" ON public.products;
 DROP POLICY IF EXISTS "Public all products" ON public.products;
 DROP POLICY IF EXISTS "Allow public select products" ON public.products;
 DROP POLICY IF EXISTS "Allow admin insert products" ON public.products;
 DROP POLICY IF EXISTS "Allow admin update products" ON public.products;
 DROP POLICY IF EXISTS "Allow admin delete products" ON public.products;
 
-DROP POLICY IF EXISTS "Allow public read access to reviews" ON public.reviews;
-DROP POLICY IF EXISTS "Allow public insert access to reviews" ON public.reviews;
-DROP POLICY IF EXISTS "Allow public update access to reviews" ON public.reviews;
 DROP POLICY IF EXISTS "Public all reviews" ON public.reviews;
 DROP POLICY IF EXISTS "Allow public select reviews" ON public.reviews;
 DROP POLICY IF EXISTS "Allow admin insert reviews" ON public.reviews;
 DROP POLICY IF EXISTS "Allow admin update reviews" ON public.reviews;
 DROP POLICY IF EXISTS "Allow admin delete reviews" ON public.reviews;
 
--- CREATE EXPLICIT RLS POLICIES FOR CATEGORIES (RLS stays ENABLED)
-CREATE POLICY "Allow public select categories" ON public.categories FOR SELECT USING (true);
-CREATE POLICY "Allow admin insert categories" ON public.categories FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow admin update categories" ON public.categories FOR UPDATE USING (true) WITH CHECK (true);
-CREATE POLICY "Allow admin delete categories" ON public.categories FOR DELETE USING (true);
+-- CREATE EXPLICIT RLS POLICIES (TO public, anon, authenticated)
+CREATE POLICY "Allow public select categories" ON public.categories FOR SELECT TO public USING (true);
+CREATE POLICY "Allow admin insert categories" ON public.categories FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow admin update categories" ON public.categories FOR UPDATE TO public USING (true) WITH CHECK (true);
+CREATE POLICY "Allow admin delete categories" ON public.categories FOR DELETE TO public USING (true);
 
--- CREATE EXPLICIT RLS POLICIES FOR PRODUCTS (RLS stays ENABLED)
-CREATE POLICY "Allow public select products" ON public.products FOR SELECT USING (true);
-CREATE POLICY "Allow admin insert products" ON public.products FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow admin update products" ON public.products FOR UPDATE USING (true) WITH CHECK (true);
-CREATE POLICY "Allow admin delete products" ON public.products FOR DELETE USING (true);
+CREATE POLICY "Allow public select products" ON public.products FOR SELECT TO public USING (true);
+CREATE POLICY "Allow admin insert products" ON public.products FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow admin update products" ON public.products FOR UPDATE TO public USING (true) WITH CHECK (true);
+CREATE POLICY "Allow admin delete products" ON public.products FOR DELETE TO public USING (true);
 
--- CREATE EXPLICIT RLS POLICIES FOR REVIEWS (RLS stays ENABLED)
-CREATE POLICY "Allow public select reviews" ON public.reviews FOR SELECT USING (true);
-CREATE POLICY "Allow admin insert reviews" ON public.reviews FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow admin update reviews" ON public.reviews FOR UPDATE USING (true) WITH CHECK (true);
-CREATE POLICY "Allow admin delete reviews" ON public.reviews FOR DELETE USING (true);
+CREATE POLICY "Allow public select reviews" ON public.reviews FOR SELECT TO public USING (true);
+CREATE POLICY "Allow admin insert reviews" ON public.reviews FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow admin update reviews" ON public.reviews FOR UPDATE TO public USING (true) WITH CHECK (true);
+CREATE POLICY "Allow admin delete reviews" ON public.reviews FOR DELETE TO public USING (true);
 
 -- USER POLICIES FOR ORDERS & PROFILES
 DROP POLICY IF EXISTS "Users can view own orders" ON public.orders;
 DROP POLICY IF EXISTS "Users can insert own orders" ON public.orders;
-CREATE POLICY "Users can view own orders" ON public.orders FOR SELECT USING (true);
-CREATE POLICY "Users can insert own orders" ON public.orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can view own orders" ON public.orders FOR SELECT TO public USING (true);
+CREATE POLICY "Users can insert own orders" ON public.orders FOR INSERT TO public WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
-CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (true);
-CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (true);
-
+CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT TO public USING (true);
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE TO public USING (true);

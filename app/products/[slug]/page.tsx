@@ -9,6 +9,10 @@ import { Rating } from '@/components/ui/Rating';
 import { Badge } from '@/components/ui/Badge';
 import { ProductClientDetails } from './ProductClientDetails';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+
 interface ProductDetailPageProps {
   params: {
     slug: string;
