@@ -125,6 +125,15 @@ export function Navbar() {
               )}
             </Link>
 
+            {/* Admin Dashboard */}
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors"
+              title="Admin Dashboard"
+            >
+              Admin Panel
+            </Link>
+
             {/* Account */}
             <Link
               href="/account"
