@@ -1,10 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { useForm } from 'react-hook-form';
 import type { PaymentFormData } from '@/types';
-import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import { Banknote, ShieldCheck, CheckCircle2, Truck } from 'lucide-react';
 
 export interface PaymentFormProps {
   onSubmit: (data: PaymentFormData) => void;
@@ -12,129 +11,72 @@ export interface PaymentFormProps {
   initialData?: Partial<PaymentFormData>;
 }
 
-export function PaymentForm({ onSubmit, onBack, initialData }: PaymentFormProps) {
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm<PaymentFormData>({
-    defaultValues: {
-      cardNumber: '',
-      cardName: '',
+export function PaymentForm({ onSubmit, onBack }: PaymentFormProps) {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      method: 'Cash on Delivery (COD)',
+      cardNumber: 'COD',
+      cardName: 'Cash on Delivery',
       expiry: '',
       cvv: '',
-      saveCard: false,
-      ...initialData,
-    },
-  });
-
-  // Simple formatter for Card Number (adds spaces every 4 digits)
-  const formatCardNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = value.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || '';
-    const parts = [];
-
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    if (parts.length > 0) {
-      setValue('cardNumber', parts.join(' '));
-    } else {
-      setValue('cardNumber', value);
-    }
-  };
-
-  // Simple formatter for Expiry Date (adds slash)
-  const formatExpiry = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    if (value.length >= 2) {
-      setValue('expiry', `${value.slice(0, 2)}/${value.slice(2, 4)}`);
-    } else {
-      setValue('expiry', value);
-    }
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
       <div className="border-b border-neutral-100 pb-4">
-        <h3 className="text-lg font-bold text-neutral-900">Payment Details</h3>
-        <p className="text-xs text-neutral-500 mt-1">Please enter your credit card details.</p>
+        <h3 className="text-lg font-bold text-neutral-900">Payment Method</h3>
+        <p className="text-xs text-neutral-500 mt-1">
+          Select your preferred payment method to proceed with checkout.
+        </p>
       </div>
 
-      <Input
-        label="Name on Card"
-        placeholder="John Doe"
-        error={errors.cardName?.message}
-        {...register('cardName', { required: 'Name on card is required' })}
-      />
+      {/* COD Payment Option Card */}
+      <div className="rounded-2xl border-2 border-primary-500 bg-primary-50/40 p-5 space-y-4 shadow-sm relative">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-600 text-white shadow-md shrink-0">
+              <Banknote className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-base font-extrabold text-neutral-900">Cash on Delivery (COD)</h4>
+                <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  <CheckCircle2 className="h-3 w-3" /> Enabled
+                </span>
+              </div>
+              <p className="text-xs text-neutral-600 mt-0.5">
+                Pay in cash when your order is delivered directly to your doorstep.
+              </p>
+            </div>
+          </div>
 
-      <Input
-        label="Card Number"
-        placeholder="4111 2222 3333 4444"
-        maxLength={19}
-        error={errors.cardNumber?.message}
-        {...register('cardNumber', {
-          required: 'Card number is required',
-          pattern: {
-            value: /^[\d\s]{16,19}$/,
-            message: 'Invalid card number format',
-          },
-        })}
-        onChange={formatCardNumber}
-      />
+          <div className="text-right shrink-0">
+            <span className="text-xs font-bold text-primary-700 bg-white border border-primary-200 px-2.5 py-1 rounded-lg shadow-2xs">
+              +$300 Delivery Fee
+            </span>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Input
-          label="Expiration Date"
-          placeholder="MM/YY"
-          maxLength={5}
-          error={errors.expiry?.message}
-          {...register('expiry', {
-            required: 'Expiration date is required',
-            pattern: {
-              value: /^(0[1-9]|1[0-2])\/\d{2}$/,
-              message: 'Format must be MM/YY',
-            },
-          })}
-          onChange={formatExpiry}
-        />
-        <Input
-          label="CVV"
-          type="password"
-          placeholder="•••"
-          maxLength={4}
-          error={errors.cvv?.message}
-          {...register('cvv', {
-            required: 'Security code (CVV) is required',
-            pattern: {
-              value: /^\d{3,4}$/,
-              message: 'Must be 3 or 4 digits',
-            },
-          })}
-        />
-      </div>
-
-      <div className="flex items-center gap-2 pt-2">
-        <input
-          type="checkbox"
-          id="saveCard"
-          className="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
-          {...register('saveCard')}
-        />
-        <label htmlFor="saveCard" className="text-sm text-neutral-600 cursor-pointer select-none">
-          Save this card for future transactions
-        </label>
+        <div className="border-t border-primary-100/80 pt-3.5 flex items-center justify-between text-xs text-neutral-600">
+          <div className="flex items-center gap-1.5 font-semibold text-neutral-800">
+            <Truck className="h-4 w-4 text-primary-600" />
+            <span>Delivery Charge: <strong className="text-primary-700 font-extrabold">$300.00</strong></span>
+          </div>
+          <div className="flex items-center gap-1 text-emerald-600 font-bold">
+            <ShieldCheck className="h-4 w-4" />
+            <span>100% Safe & Verified</span>
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-between items-center gap-4 pt-4 border-t border-neutral-100">
         <Button type="button" variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button type="submit" variant="primary">
-          Review Order
+        <Button type="submit" variant="primary" className="px-6 shadow-glow">
+          Continue to Order Review
         </Button>
       </div>
     </form>

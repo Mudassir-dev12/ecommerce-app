@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Send, HelpCircle, Shield, Truck, RotateCcw } from 'lucide-react';
 import { useToast } from '../ui/Toast';
 import { Button } from '../ui/Button';
@@ -30,8 +31,8 @@ export function Footer() {
                 <Truck className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-neutral-200">Free Express Delivery</h4>
-                <p className="text-xs text-neutral-500">On all orders over $150.00</p>
+                <h4 className="text-sm font-semibold text-neutral-200">Express COD Delivery</h4>
+                <p className="text-xs text-neutral-500">Fast delivery to your doorstep</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -39,8 +40,8 @@ export function Footer() {
                 <RotateCcw className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-neutral-200">30-Day Free Returns</h4>
-                <p className="text-xs text-neutral-500">No questions asked return policy</p>
+                <h4 className="text-sm font-semibold text-neutral-200">Easy Exchanges</h4>
+                <p className="text-xs text-neutral-500">Hassle-free size exchange policy</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -48,8 +49,8 @@ export function Footer() {
                 <Shield className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-neutral-200">Secure Checkout</h4>
-                <p className="text-xs text-neutral-500">256-bit SSL encrypted payments</p>
+                <h4 className="text-sm font-semibold text-neutral-200">100% Authentic Quality</h4>
+                <p className="text-xs text-neutral-500">Premium luxury fabrics & designs</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -57,8 +58,8 @@ export function Footer() {
                 <HelpCircle className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-neutral-200">24/7 Dedicated Support</h4>
-                <p className="text-xs text-neutral-500">Chat or email whenever you need</p>
+                <h4 className="text-sm font-semibold text-neutral-200">Dedicated Customer Support</h4>
+                <p className="text-xs text-neutral-500">Call or WhatsApp anytime</p>
               </div>
             </div>
           </div>
@@ -71,14 +72,25 @@ export function Footer() {
           
           {/* Brand/About */}
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2 font-bold text-xl text-neutral-100 mb-4">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white font-extrabold shadow-glow">
-                A
-              </span>
-              <span>Antigravity</span>
+            <Link href="/" className="flex items-center gap-3 mb-4 group">
+              <Image
+                src="/pnglogo.png"
+                alt="Modern Traders Logo"
+                width={52}
+                height={52}
+                className="h-12 w-auto object-contain"
+              />
+              <div className="flex flex-col">
+                <span className="font-extrabold text-lg tracking-tight text-white uppercase">
+                  Modern Traders
+                </span>
+                <span className="text-[10px] font-bold tracking-[0.2em] text-[#F1A19B] uppercase">
+                  Womens Arrival
+                </span>
+              </div>
             </Link>
             <p className="text-sm text-neutral-400 leading-relaxed mb-6">
-              Experience the future of online shopping. We build high-fidelity, high-performance web solutions with user experience at the core.
+              Modern Traders - Womens Arrival is your premier destination for luxury women's fashion, designer apparel, and elegant collections.
             </p>
             <div className="flex gap-4">
               <a href="#" className="hover:text-neutral-200 transition-colors" aria-label="Twitter">
@@ -156,7 +168,7 @@ export function Footer() {
 
         {/* Bottom footer bar */}
         <div className="border-t border-neutral-800 mt-16 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
-          <p>© {new Date().getFullYear()} Antigravity Inc. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Modern Traders - Womens Arrival. All rights reserved.</p>
           <div className="flex gap-6">
             <a href="#" className="hover:text-neutral-200 transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-neutral-200 transition-colors">Terms of Service</a>

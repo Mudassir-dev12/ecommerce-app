@@ -12,7 +12,8 @@ import { PaymentForm } from '@/components/checkout/PaymentForm';
 import { OrderReview } from '@/components/checkout/OrderReview';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
-import type { ShippingFormData, PaymentFormData } from '@/types';
+import { createOrder } from '@/lib/api';
+import type { ShippingFormData, PaymentFormData, OrderItem } from '@/types';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -57,7 +58,7 @@ export default function CheckoutPage() {
     }
   }, [promoCode, subtotal]);
 
-  const shipping = subtotal > 150 ? 0 : 15;
+  const shipping = 300; // Fixed COD Delivery Charge ($300)
   const tax = subtotal * 0.09;
   const total = Math.max(subtotal - discountAmount + shipping + tax, 0);
 
@@ -73,11 +74,51 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     setIsSubmitting(true);
-    // Simulate placing order API delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
+
     const generatedOrderNum = `EC-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
-    
+
+    const orderItems: OrderItem[] = cart.map((item) => ({
+      productId: item.productId,
+      slug: item.slug,
+      name: item.name,
+      image: item.image,
+      price: item.price,
+      quantity: item.quantity,
+      selectedSize: item.selectedSize,
+      selectedColor: item.selectedColor,
+    }));
+
+    const paymentMethodLabel = 'Cash on Delivery (COD)';
+
+    try {
+      await createOrder({
+        orderNumber: generatedOrderNum,
+        status: 'pending',
+        items: orderItems,
+        subtotal,
+        shipping,
+        tax,
+        discount: discountAmount,
+        total,
+        shippingAddress: {
+          id: `addr-${Date.now()}`,
+          label: 'Shipping Address',
+          firstName: shippingData?.firstName || 'Customer',
+          lastName: shippingData?.lastName || '',
+          line1: shippingData?.line1 || '',
+          line2: shippingData?.line2 || '',
+          city: shippingData?.city || '',
+          state: shippingData?.state || '',
+          zip: shippingData?.zip || '',
+          country: shippingData?.country || 'United States',
+          phone: shippingData?.phone || '',
+        },
+        paymentMethod: paymentMethodLabel,
+      });
+    } catch (err) {
+      console.error('Error creating order:', err);
+    }
+
     setIsSubmitting(false);
     setOrderCompleteNumber(generatedOrderNum);
     clearCart();
@@ -208,8 +249,8 @@ export default function CheckoutPage() {
                 </div>
               )}
               <div className="flex justify-between">
-                <span>Shipping</span>
-                <span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                <span>COD Delivery Charge</span>
+                <span className="font-semibold text-neutral-900">{formatPrice(shipping)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Tax</span>

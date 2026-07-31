@@ -31,13 +31,6 @@ export function OrderReview({
   onBack,
   isSubmitting = false,
 }: OrderReviewProps) {
-  // Mask card number for review
-  const maskedCardNumber = React.useMemo(() => {
-    const rawNum = paymentData.cardNumber.replace(/\s/g, '');
-    if (rawNum.length < 4) return '••••';
-    return `•••• •••• •••• ${rawNum.slice(-4)}`;
-  }, [paymentData.cardNumber]);
-
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="border-b border-neutral-100 pb-4">
@@ -67,14 +60,15 @@ export function OrderReview({
         <div className="rounded-xl border border-neutral-150 p-5 bg-white space-y-2">
           <h4 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">Payment Details</h4>
           <div className="text-sm text-neutral-600 space-y-1">
-            <p className="font-semibold text-neutral-800">{paymentData.cardName}</p>
-            <div className="flex items-center gap-2">
-              <span className="flex h-5 w-8 items-center justify-center rounded bg-neutral-100 font-extrabold text-[9px] tracking-wider uppercase border border-neutral-200">
-                Card
+            <p className="font-bold text-neutral-900">Cash on Delivery (COD)</p>
+            <p className="text-xs text-neutral-500">
+              You will pay cash when your package is delivered to your address.
+            </p>
+            <div className="pt-1">
+              <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-md border border-emerald-200">
+                COD Delivery Charge: $300.00
               </span>
-              <p className="font-mono text-neutral-700">{maskedCardNumber}</p>
             </div>
-            <p className="text-xs text-neutral-400">Expires: {paymentData.expiry}</p>
           </div>
         </div>
       </div>
@@ -117,8 +111,8 @@ export function OrderReview({
           </div>
         )}
         <div className="flex justify-between text-sm text-neutral-600">
-          <span>Shipping Fee</span>
-          <span>{totals.shipping === 0 ? 'Free' : formatPrice(totals.shipping)}</span>
+          <span>COD Delivery Charge</span>
+          <span className="font-semibold text-neutral-900">{formatPrice(totals.shipping)}</span>
         </div>
         <div className="flex justify-between text-sm text-neutral-600">
           <span>Tax</span>

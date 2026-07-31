@@ -14,6 +14,7 @@ import type {
   Category,
   Review,
   Order,
+  OrderStatus,
   User,
   ProductFilters,
   SortOption,
@@ -176,13 +177,27 @@ export async function getProducts(
 
     if (!error && data !== null) {
       const dbProducts = data.map(mapProduct);
-      if (!filters.category && !filters.search && filters.minPrice === undefined && filters.maxPrice === undefined) {
-        localProductsStore = dbProducts;
-        saveLocalProducts(dbProducts);
+      const localList = getLocalProducts();
+
+      const productMap = new Map<string, Product>();
+      // Add local products first
+      for (const p of localList) {
+        productMap.set(p.id, p);
       }
-      const total = count !== null && count !== undefined ? count : dbProducts.length;
+      // Add DB products (overwriting or complementing local ones)
+      for (const p of dbProducts) {
+        productMap.set(p.id, p);
+      }
+
+      const mergedProducts = Array.from(productMap.values());
+
+      if (!filters.category && !filters.search && filters.minPrice === undefined && filters.maxPrice === undefined) {
+        localProductsStore = mergedProducts;
+        saveLocalProducts(mergedProducts);
+      }
+      const total = count !== null && count !== undefined ? count : mergedProducts.length;
       return {
-        products: dbProducts,
+        products: mergedProducts,
         pagination: {
           page,
           perPage,
@@ -331,12 +346,230 @@ export async function getReviewsByProductId(productId: string): Promise<Review[]
 
 // ─── Orders & User ────────────────────────────────────────────────────────
 
+const ORDERS_STORAGE_KEY = 'ecommerce_orders_data_v1';
+
+function mapOrder(row: any): Order {
+  return {
+    id: row.id,
+    orderNumber: row.order_number,
+    status: (row.status || 'pending') as OrderStatus,
+    items: Array.isArray(row.items) ? row.items : [],
+    subtotal: Number(row.subtotal || 0),
+    shipping: Number(row.shipping || 0),
+    tax: Number(row.tax || 0),
+    discount: Number(row.discount || 0),
+    total: Number(row.total || 0),
+    shippingAddress: row.shipping_address || {},
+    paymentMethod: row.payment_method || 'Credit Card',
+    createdAt: row.created_at || new Date().toISOString(),
+    updatedAt: row.updated_at || new Date().toISOString(),
+    estimatedDelivery: row.estimated_delivery,
+    trackingNumber: row.tracking_number,
+  };
+}
+
+function getLocalOrders(): Order[] {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem(ORDERS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading orders from localStorage:', e);
+    }
+  }
+  return [];
+}
+
+function saveLocalOrders(orders: Order[]): void {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders));
+    } catch (e) {
+      console.warn('Error writing orders to localStorage:', e);
+    }
+  }
+}
+
+export async function createOrder(orderData: Partial<Order>): Promise<Order> {
+  const now = new Date().toISOString();
+  const id = orderData.id || `ord-${Date.now()}`;
+  const orderNumber =
+    orderData.orderNumber ||
+    `EC-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(
+      new Date().getDate()
+    ).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  const newOrder: Order = {
+    id,
+    orderNumber,
+    status: orderData.status || 'pending',
+    items: orderData.items || [],
+    subtotal: Number(orderData.subtotal || 0),
+    shipping: Number(orderData.shipping || 0),
+    tax: Number(orderData.tax || 0),
+    discount: Number(orderData.discount || 0),
+    total: Number(orderData.total || 0),
+    shippingAddress: orderData.shippingAddress || {
+      id: `addr-${Date.now()}`,
+      label: 'Shipping Address',
+      firstName: 'Customer',
+      lastName: '',
+      line1: '123 Main St',
+      city: 'City',
+      state: 'State',
+      zip: '00000',
+      country: 'United States',
+      phone: '',
+    },
+    paymentMethod: orderData.paymentMethod || 'Credit Card',
+    createdAt: orderData.createdAt || now,
+    updatedAt: orderData.updatedAt || now,
+    estimatedDelivery:
+      orderData.estimatedDelivery ||
+      new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    trackingNumber:
+      orderData.trackingNumber || `TRK${Math.floor(100000000 + Math.random() * 900000000)}`,
+  };
+
+  // 1. Save to local storage immediately so it's instantly available
+  const currentOrders = getLocalOrders();
+  const updatedOrders = [newOrder, ...currentOrders.filter((o) => o.id !== id)];
+  saveLocalOrders(updatedOrders);
+
+  // 2. Also save to Supabase
+  try {
+    const payload = {
+      id: newOrder.id,
+      order_number: newOrder.orderNumber,
+      status: newOrder.status,
+      items: newOrder.items,
+      subtotal: newOrder.subtotal,
+      shipping: newOrder.shipping,
+      tax: newOrder.tax,
+      discount: newOrder.discount,
+      total: newOrder.total,
+      shipping_address: newOrder.shippingAddress,
+      payment_method: newOrder.paymentMethod,
+      created_at: newOrder.createdAt,
+      updated_at: newOrder.updatedAt,
+    };
+
+    const { error } = await supabase.from('orders').upsert([payload], { onConflict: 'id' });
+    if (error) {
+      console.warn('Supabase order creation notice:', error.message);
+    }
+  } catch (e) {
+    console.warn('Supabase error on createOrder:', e);
+  }
+
+  // Dispatch custom window event for instant cross-component updates
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('order-placed'));
+  }
+
+  return newOrder;
+}
+
 export async function getOrders(): Promise<Order[]> {
-  return mockOrders;
+  const localOrders = getLocalOrders();
+  let dbOrders: Order[] = [];
+
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data && data.length > 0) {
+      dbOrders = data.map(mapOrder);
+    }
+  } catch (err) {
+    console.warn('Supabase getOrders failed, using local orders:', err);
+  }
+
+  // Combine DB orders & local storage orders uniquely by ID
+  const orderMap = new Map<string, Order>();
+
+  for (const o of localOrders) {
+    orderMap.set(o.id, o);
+  }
+  for (const o of dbOrders) {
+    orderMap.set(o.id, o);
+  }
+
+  const merged = Array.from(orderMap.values()).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  saveLocalOrders(merged);
+  return merged;
 }
 
 export async function getOrderById(id: string): Promise<Order | null> {
-  return mockOrders.find((o) => o.id === id) ?? null;
+  const orders = await getOrders();
+  return orders.find((o) => o.id === id || o.orderNumber === id) ?? null;
+}
+
+export async function updateOrderStatus(id: string, status: OrderStatus): Promise<Order> {
+  const updatedAt = new Date().toISOString();
+  try {
+    await supabase.from('orders').update({ status, updated_at: updatedAt }).eq('id', id);
+  } catch (e) {}
+
+  const current = getLocalOrders();
+  const index = current.findIndex((o) => o.id === id);
+  if (index > -1) {
+    current[index] = { ...current[index], status, updatedAt };
+    saveLocalOrders(current);
+    return current[index];
+  }
+  throw new Error('Order not found');
+}
+
+export async function deleteOrderFromDb(id: string): Promise<boolean> {
+  try {
+    await supabase.from('orders').delete().eq('id', id);
+  } catch (e) {}
+
+  const current = getLocalOrders();
+  const updated = current.filter((o) => o.id !== id);
+  saveLocalOrders(updated);
+  return true;
+}
+
+// ─── Supabase Storage Image Upload ──────────────────────────────────────────
+
+export async function uploadProductImage(file: File): Promise<string> {
+  const sanitizeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const fileName = `${Date.now()}_${sanitizeName}`;
+
+  const { data, error } = await supabase.storage
+    .from('images')
+    .upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: true,
+      contentType: file.type || 'image/png',
+    });
+
+  if (error) {
+    console.error('Supabase Storage Bucket upload error:', error);
+    throw new Error(`Supabase Storage Error: ${error.message}. Please configure RLS policies for your 'images' bucket.`);
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from('images')
+    .getPublicUrl(fileName);
+
+  if (!publicUrlData || !publicUrlData.publicUrl) {
+    throw new Error('Failed to retrieve public CDN URL from Supabase Storage.');
+  }
+
+  return publicUrlData.publicUrl;
 }
 
 export async function getCurrentUser(): Promise<User> {
@@ -363,7 +596,9 @@ export async function createProduct(productData: Partial<Product>): Promise<Prod
   const id = productData.id || `prod-${Date.now()}`;
   const slug =
     productData.slug ||
-    (productData.name ? productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : id);
+    (productData.name
+      ? `${productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Math.floor(1000 + Math.random() * 9000)}`
+      : id);
 
   const stockCount = Number(productData.stockCount) || 0;
   const inStock = productData.inStock !== undefined ? Boolean(productData.inStock) : stockCount > 0;
@@ -405,24 +640,75 @@ export async function createProduct(productData: Partial<Product>): Promise<Prod
     is_new: Boolean(productData.isNew),
     is_featured: Boolean(productData.isFeatured),
     is_best_seller: Boolean(productData.isBestSeller),
-    sku: productData.sku || `SKU-${Date.now()}`,
+    sku: productData.sku || `SKU-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
   };
 
-  const { data, error } = await supabase.from('products').upsert([payload], { onConflict: 'id' }).select();
+  let createdProduct: Product;
 
-  if (error) {
-    console.error('Supabase product creation error:', error);
-    throw new Error(`Database error: ${error.message}`);
+  try {
+    const { data, error } = await supabase.from('products').upsert([payload], { onConflict: 'id' }).select();
+
+    if (!error && data && data.length > 0) {
+      createdProduct = mapProduct(data[0]);
+    } else {
+      console.warn('Supabase product creation notice:', error?.message);
+      createdProduct = {
+        id: payload.id,
+        slug: payload.slug,
+        name: payload.name,
+        brand: payload.brand,
+        description: payload.description,
+        longDescription: payload.long_description,
+        price: payload.price,
+        originalPrice: payload.original_price ? Number(payload.original_price) : undefined,
+        discount: payload.discount ? Number(payload.discount) : undefined,
+        category: payload.category,
+        categorySlug: payload.category_slug,
+        tags: payload.tags,
+        images: payload.images,
+        variants: payload.variants,
+        rating: payload.rating,
+        reviewCount: payload.review_count,
+        inStock: payload.in_stock,
+        stockCount: payload.stock_count,
+        isNew: payload.is_new,
+        isFeatured: payload.is_featured,
+        isBestSeller: payload.is_best_seller,
+        createdAt: new Date().toISOString(),
+        sku: payload.sku,
+      };
+    }
+  } catch (err: any) {
+    console.warn('Supabase save exception (fallback to local):', err?.message || err);
+    createdProduct = {
+      id: payload.id,
+      slug: payload.slug,
+      name: payload.name,
+      brand: payload.brand,
+      description: payload.description,
+      longDescription: payload.long_description,
+      price: payload.price,
+      originalPrice: payload.original_price ? Number(payload.original_price) : undefined,
+      discount: payload.discount ? Number(payload.discount) : undefined,
+      category: payload.category,
+      categorySlug: payload.category_slug,
+      tags: payload.tags,
+      images: payload.images,
+      variants: payload.variants,
+      rating: payload.rating,
+      reviewCount: payload.review_count,
+      inStock: payload.in_stock,
+      stockCount: payload.stock_count,
+      isNew: payload.is_new,
+      isFeatured: payload.is_featured,
+      isBestSeller: payload.is_best_seller,
+      createdAt: new Date().toISOString(),
+      sku: payload.sku,
+    };
   }
-
-  if (!data || data.length === 0) {
-    throw new Error('Database error: Failed to save product to Supabase');
-  }
-
-  const createdProduct = mapProduct(data[0]);
 
   const currentList = getLocalProducts();
-  const updatedList = [createdProduct, ...currentList.filter(p => p.id !== id)];
+  const updatedList = [createdProduct, ...currentList.filter((p) => p.id !== id && p.slug !== createdProduct.slug)];
   localProductsStore = updatedList;
   saveLocalProducts(updatedList);
 
@@ -511,14 +797,36 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
 }
 
 export async function deleteProduct(id: string): Promise<boolean> {
-  const { error } = await supabase.from('products').delete().eq('id', id);
-  if (error) {
-    const { error: slugErr } = await supabase.from('products').delete().eq('slug', id);
-    if (slugErr) {
-      throw new Error(`Database error: ${error.message}`);
+  // 1. Find product details to extract its image URLs for bucket cleanup
+  try {
+    const productToDelete = await getProductBySlug(id);
+    if (productToDelete && Array.isArray(productToDelete.images)) {
+      for (const img of productToDelete.images) {
+        if (img.url && img.url.includes('/storage/v1/object/public/images/')) {
+          const filePath = img.url.split('/storage/v1/object/public/images/')[1];
+          if (filePath) {
+            const cleanPath = decodeURIComponent(filePath.split('?')[0]);
+            const { error: storageErr } = await supabase.storage
+              .from('images')
+              .remove([cleanPath]);
+            if (storageErr) {
+              console.warn('Notice deleting product image from Supabase Storage:', storageErr.message);
+            }
+          }
+        }
+      }
     }
+  } catch (e) {
+    console.warn('Error during product image bucket deletion:', e);
   }
 
+  // 2. Delete product record from Supabase DB
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) {
+    await supabase.from('products').delete().eq('slug', id);
+  }
+
+  // 3. Remove product from local products store
   const currentList = getLocalProducts();
   const updatedList = currentList.filter((p) => p.id !== id && p.slug !== id);
   localProductsStore = updatedList;

@@ -2,94 +2,26 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ShoppingBag, ArrowRight, ArrowLeft, Ticket, ShieldCheck } from 'lucide-react';
+import { ShoppingBag, ArrowRight, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { useToast } from '@/components/ui/Toast';
 import { CartItem } from '@/components/cart/CartItem';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { formatPrice } from '@/lib/utils';
-import { validatePromoCode } from '@/lib/api';
 
 export default function CartPage() {
   const { toast } = useToast();
   const cart = useStore((state) => state.cart);
-  const promoCode = useStore((state) => state.promoCode);
-  const applyPromoCode = useStore((state) => state.applyPromoCode);
   const clearCart = useStore((state) => state.clearCart);
-
-  const [promoInput, setPromoInput] = React.useState('');
-  const [isValidatingPromo, setIsValidatingPromo] = React.useState(false);
-
-  // Sync input value with current promoCode
-  React.useEffect(() => {
-    if (promoCode) {
-      setPromoInput(promoCode.code);
-    }
-  }, [promoCode]);
 
   // Calculations
   const subtotal = React.useMemo(() => {
     return cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   }, [cart]);
 
-  const discountAmount = React.useMemo(() => {
-    if (!promoCode) return 0;
-    if (promoCode.minOrder && subtotal < promoCode.minOrder) {
-      return 0; // Did not reach threshold
-    }
-    if (promoCode.type === 'percentage') {
-      return subtotal * (promoCode.value / 100);
-    } else {
-      return promoCode.value; // fixed dollar amount
-    }
-  }, [promoCode, subtotal]);
-
-  // Clean out promo code if cart subtotal goes below minimum order threshold
-  React.useEffect(() => {
-    if (promoCode?.minOrder && subtotal < promoCode.minOrder) {
-      applyPromoCode(null);
-      toast(`Promo code ${promoCode.code} removed because order subtotal is below ${formatPrice(promoCode.minOrder)}.`, 'warning');
-    }
-  }, [subtotal, promoCode, applyPromoCode, toast]);
-
-  const shipping = subtotal > 150 ? 0 : subtotal > 0 ? 15 : 0; // free shipping over $150
+  const shipping = subtotal > 0 ? 300 : 0; // Fixed COD Delivery Charge ($300)
   const tax = subtotal * 0.09; // flat 9% simulated tax rate
-  const total = Math.max(subtotal - discountAmount + shipping + tax, 0);
-
-  const handleApplyPromo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!promoInput.trim()) return;
-
-    setIsValidatingPromo(true);
-    try {
-      const codeData = await validatePromoCode(promoInput.trim());
-      if (codeData && codeData.isValid) {
-        if (codeData.minOrder && subtotal < codeData.minOrder) {
-          toast(
-            `Promo code ${codeData.code} requires a minimum subtotal of ${formatPrice(codeData.minOrder)}.`,
-            'error'
-          );
-        } else {
-          applyPromoCode(codeData);
-          toast(`Promo code "${codeData.code}" applied successfully!`, 'success');
-        }
-      } else {
-        toast('Invalid promo code. Please check and try again.', 'error');
-      }
-    } catch (err) {
-      console.error(err);
-      toast('Error validating promo code.', 'error');
-    } finally {
-      setIsValidatingPromo(false);
-    }
-  };
-
-  const handleRemovePromo = () => {
-    applyPromoCode(null);
-    setPromoInput('');
-    toast('Promo code removed.', 'info');
-  };
+  const total = Math.max(subtotal + shipping + tax, 0);
 
   if (cart.length === 0) {
     return (
@@ -163,25 +95,10 @@ export default function CartPage() {
                 <span className="font-semibold text-neutral-800">{formatPrice(subtotal)}</span>
               </div>
 
-              {promoCode && (
-                <div className="flex justify-between text-sm text-emerald-600 font-semibold items-center">
-                  <div className="flex items-center gap-1">
-                    <span>Discount ({promoCode.code})</span>
-                    <button
-                      onClick={handleRemovePromo}
-                      className="text-neutral-400 hover:text-rose-500 text-[10px] font-bold underline"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                  <span>-{formatPrice(discountAmount)}</span>
-                </div>
-              )}
-
               <div className="flex justify-between text-sm text-neutral-600">
-                <span>Shipping Fee</span>
-                <span className="font-semibold text-neutral-800">
-                  {shipping === 0 ? 'Free' : formatPrice(shipping)}
+                <span>COD Delivery Charge</span>
+                <span className="font-semibold text-neutral-900">
+                  {formatPrice(shipping)}
                 </span>
               </div>
 
@@ -206,49 +123,6 @@ export default function CartPage() {
             </Link>
           </div>
 
-          {/* Promo code panel */}
-          <div className="rounded-2xl border border-neutral-155 bg-white p-5 shadow-sm space-y-4">
-            <h4 className="text-sm font-bold text-neutral-800 flex items-center gap-2">
-              <Ticket className="h-4 w-4 text-primary-500" />
-              <span>Promo Code</span>
-            </h4>
-            <form onSubmit={handleApplyPromo} className="flex gap-2">
-              <input
-                type="text"
-                placeholder="e.g. SAVE10"
-                value={promoInput}
-                onChange={(e) => setPromoInput(e.target.value)}
-                disabled={!!promoCode}
-                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm uppercase placeholder:text-neutral-400 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              {!promoCode ? (
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  size="sm"
-                  isLoading={isValidatingPromo}
-                  className="px-4 text-xs shrink-0"
-                >
-                  Apply
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  onClick={handleRemovePromo}
-                  variant="outline"
-                  size="sm"
-                  className="px-4 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 shrink-0 border-rose-100"
-                >
-                  Remove
-                </Button>
-              )}
-            </form>
-            <p className="text-[10px] text-neutral-400 leading-normal">
-              Try code <span className="font-semibold text-neutral-500">SAVE10</span> for 10% off, or{' '}
-              <span className="font-semibold text-neutral-500">WELCOME20</span> for 20% off orders over $100.
-            </p>
-          </div>
-
           {/* Secure details info */}
           <div className="flex gap-2.5 items-start justify-center p-3 text-xs text-neutral-400">
             <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
@@ -264,3 +138,4 @@ export default function CartPage() {
     </div>
   );
 }
+

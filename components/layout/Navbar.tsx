@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ShoppingBag, Heart, User, Search, Menu, X, ArrowRight } from 'lucide-react';
 import { useStore } from '@/lib/store';
@@ -37,16 +38,28 @@ export function Navbar() {
   const wishlistCount = wishlist.length;
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-neutral-100 bg-white/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-[#e7dccb] bg-[#FAEAD9]/95 backdrop-blur-md shadow-2xs">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-4">
+        <div className="flex h-20 items-center justify-between gap-4">
           
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight text-neutral-900">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-600 text-white font-extrabold shadow-glow">
-              A
-            </span>
-            <span>Antigravity</span>
+          {/* Official Modern Traders Logo */}
+          <Link href="/" className="flex items-center gap-3 group shrink-0">
+            <Image
+              src="/pnglogo.png"
+              alt="Modern Traders Womens Arrival Logo"
+              width={52}
+              height={52}
+              priority
+              className="h-12 w-auto object-contain group-hover:scale-105 transition-transform"
+            />
+            <div className="flex flex-col justify-center">
+              <span className="font-extrabold text-lg tracking-tight text-[#131213] leading-none uppercase tracking-wide">
+                Modern Traders
+              </span>
+              <span className="text-[10px] font-bold tracking-[0.2em] text-[#B57A20] uppercase mt-1">
+                Womens Arrival
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation Links */}

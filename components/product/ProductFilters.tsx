@@ -125,7 +125,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
 
       {/* Price Range Form */}
       <div className="space-y-3">
-        <h5 className="text-sm font-bold text-neutral-800 uppercase tracking-wide">Price Range</h5>
+        <h5 className="text-sm font-bold text-neutral-800 uppercase tracking-wide">Price Range (Rs.)</h5>
         <form onSubmit={handlePriceApply} className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <input

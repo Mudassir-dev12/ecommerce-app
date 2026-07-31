@@ -222,10 +222,11 @@ export interface ShippingFormData {
 }
 
 export interface PaymentFormData {
-  cardNumber: string;
-  cardName: string;
-  expiry: string;
-  cvv: string;
+  method?: string;
+  cardNumber?: string;
+  cardName?: string;
+  expiry?: string;
+  cvv?: string;
   saveCard?: boolean;
 }
 

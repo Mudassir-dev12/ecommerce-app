@@ -6,14 +6,12 @@ export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
 
-/** Format a price as USD currency string */
-export function formatPrice(price: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
+/** Format a price as PKR currency string */
+export function formatPrice(price: number, currency = 'PKR'): string {
+  if (typeof price !== 'number' || isNaN(price)) return 'Rs. 0';
+  return `Rs. ${new Intl.NumberFormat('en-PK', {
+    maximumFractionDigits: 0,
+  }).format(price)}`;
 }
 
 /** Convert a string to a URL-friendly slug */

@@ -32,28 +32,28 @@ export default async function HomePage() {
             
             {/* Call to action */}
             <div className="space-y-6 text-center lg:text-left">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-500/10 px-3 py-1 text-xs font-bold tracking-wide text-primary-400 uppercase ring-1 ring-primary-500/20">
-                {heroProduct?.brand ? `${heroProduct.brand} • Featured Pick` : 'New Arrivals'}
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-500/10 px-3.5 py-1 text-xs font-bold tracking-widest text-primary-400 uppercase ring-1 ring-primary-500/20">
+                ✨ Modern Traders • Womens Arrival
               </span>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-                {heroProduct ? heroProduct.name : 'Discover Premium Quality Products'}
+                {heroProduct ? heroProduct.name : 'Exclusive Women’s Fashion & Arrival Collection'}
               </h1>
               <p className="text-base sm:text-lg text-neutral-300 max-w-lg mx-auto lg:mx-0 leading-relaxed line-clamp-3">
                 {heroProduct
                   ? heroProduct.description
-                  : 'Explore our wide selection of top-rated items curated just for you with unbelievable prices and fast delivery.'}
+                  : 'Explore our latest luxury womenswear collection curated with premium fabrics, elegant designs, and effortless sophistication.'}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 {heroProduct ? (
                   <Link href={`/products/${heroProduct.slug}`}>
-                    <span className="inline-flex items-center justify-center rounded-xl bg-primary-600 px-6 py-3.5 text-base font-bold text-white shadow-glow hover:bg-primary-700 transition-all cursor-pointer">
-                      Buy Now
+                    <span className="inline-flex items-center justify-center rounded-xl bg-[#B57A20] px-6 py-3.5 text-base font-bold text-white shadow-glow hover:bg-[#9f641a] transition-all cursor-pointer">
+                      Shop Now
                     </span>
                   </Link>
                 ) : null}
                 <Link href="/products">
                   <span className="inline-flex items-center justify-center rounded-xl border border-neutral-700 px-6 py-3.5 text-base font-semibold text-neutral-300 hover:bg-neutral-800 hover:text-white transition-all cursor-pointer gap-2">
-                    <span>Explore Shop</span>
+                    <span>Explore Collection</span>
                     <ArrowRight className="h-4 w-4" />
                   </span>
                 </Link>

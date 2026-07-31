@@ -133,3 +133,26 @@ DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT TO public USING (true);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE TO public USING (true);
+
+-- 6. SUPABASE STORAGE BUCKET POLICIES (FOR 'images' BUCKET)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('images', 'images', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+DROP POLICY IF EXISTS "Public Select Images" ON storage.objects;
+CREATE POLICY "Public Select Images" ON storage.objects
+FOR SELECT TO public USING (bucket_id = 'images');
+
+DROP POLICY IF EXISTS "Public Insert Images" ON storage.objects;
+CREATE POLICY "Public Insert Images" ON storage.objects
+FOR INSERT TO public WITH CHECK (bucket_id = 'images');
+
+DROP POLICY IF EXISTS "Public Update Images" ON storage.objects;
+CREATE POLICY "Public Update Images" ON storage.objects
+FOR UPDATE TO public USING (bucket_id = 'images');
+
+DROP POLICY IF EXISTS "Public Delete Images" ON storage.objects;
+CREATE POLICY "Public Delete Images" ON storage.objects
+FOR DELETE TO public USING (bucket_id = 'images');
+
+

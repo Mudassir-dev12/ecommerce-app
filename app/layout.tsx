@@ -13,8 +13,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Antigravity Store | Modern E-Commerce',
-  description: 'Premium Next.js + Tailwind CSS e-commerce catalog and cart experience.',
+  title: 'Modern Traders - Womens Arrival | Luxury Women Fashion',
+  description: 'Shop luxury women dresses, pret collection, couture and boutique fashion at Modern Traders - Womens Arrival.',
+  icons: {
+    icon: '/pnglogo.png',
+  },
 };
 
 export default function RootLayout({

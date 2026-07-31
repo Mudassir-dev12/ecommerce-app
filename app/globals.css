@@ -14,17 +14,21 @@ html {
 }
 
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #FAEAD9;
+  color: #131213;
 }
 
-/* Custom transitions and premium features */
+/* Custom transitions and luxury features */
 .transition-card {
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .gradient-premium {
-  background-image: linear-gradient(to right, #4f46e5, #4338ca);
+  background-image: linear-gradient(135deg, #F1A19B 0%, #ce6862 50%, #ad4e49 100%);
+}
+
+.gradient-gold {
+  background-image: linear-gradient(135deg, #B57A20 0%, #804b19 100%);
 }
 
 /* Custom scrollbars */
