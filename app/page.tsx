@@ -4,11 +4,11 @@ import Image from 'next/image';
 import { ArrowRight, Percent, ShieldCheck, Zap } from 'lucide-react';
 import { getFeaturedProducts, getCategories } from '@/lib/api';
 import { ProductCard } from '@/components/product/ProductCard';
+import { HeroSlider } from '@/components/home/HeroSlider';
 import { formatPrice } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
 
 export default async function HomePage() {
   const [featuredProducts, categories] = await Promise.all([
@@ -16,84 +16,17 @@ export default async function HomePage() {
     getCategories(),
   ]);
 
-  const heroProduct = featuredProducts.length > 0 ? featuredProducts[0] : null;
-
   return (
     <div className="space-y-16 pb-16">
       
-      {/* ─── Hero Section ─────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-neutral-900 text-white rounded-b-[2rem] shadow-glow-lg">
-        {/* Decorative grids */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] opacity-25" />
-        <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 h-96 w-96 rounded-full bg-primary-600/35 filter blur-[100px]" />
-        
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            
-            {/* Call to action */}
-            <div className="space-y-6 text-center lg:text-left">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-500/10 px-3.5 py-1 text-xs font-bold tracking-widest text-primary-400 uppercase ring-1 ring-primary-500/20">
-                ✨ Modern Traders • Womens Arrival
-              </span>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-                {heroProduct ? heroProduct.name : 'Exclusive Women’s Fashion & Arrival Collection'}
-              </h1>
-              <p className="text-base sm:text-lg text-neutral-300 max-w-lg mx-auto lg:mx-0 leading-relaxed line-clamp-3">
-                {heroProduct
-                  ? heroProduct.description
-                  : 'Explore our latest luxury womenswear collection curated with premium fabrics, elegant designs, and effortless sophistication.'}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                {heroProduct ? (
-                  <Link href={`/products/${heroProduct.slug}`}>
-                    <span className="inline-flex items-center justify-center rounded-xl bg-[#B57A20] px-6 py-3.5 text-base font-bold text-white shadow-glow hover:bg-[#9f641a] transition-all cursor-pointer">
-                      Shop Now
-                    </span>
-                  </Link>
-                ) : null}
-                <Link href="/products">
-                  <span className="inline-flex items-center justify-center rounded-xl border border-neutral-700 px-6 py-3.5 text-base font-semibold text-neutral-300 hover:bg-neutral-800 hover:text-white transition-all cursor-pointer gap-2">
-                    <span>Explore Collection</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </span>
-                </Link>
-              </div>
-            </div>
+      {/* ─── Full-Screen Hero Banner Carousel (1.jpg, 2.jpg, 3.jpg) ───────── */}
+      <HeroSlider />
 
-            {/* Visual Hero Image Callout */}
-            {heroProduct && (
-              <div className="relative aspect-[4/3] w-full max-w-lg mx-auto overflow-hidden rounded-3xl bg-neutral-800 border border-neutral-700 p-2 shadow-2xl flex items-center justify-center">
-                <Image
-                  src={heroProduct.images[0]?.url || 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=800&q=80'}
-                  alt={heroProduct.name}
-                  fill
-                  priority
-                  className="object-cover object-center scale-[1.02] hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute bottom-4 left-4 right-4 bg-neutral-900/90 backdrop-blur-md border border-neutral-700 rounded-2xl p-4 flex justify-between items-center gap-4 shadow-xl">
-                  <div className="min-w-0 flex-1">
-                    <h4 className="text-sm font-bold text-white truncate">{heroProduct.name}</h4>
-                    <p className="text-xs text-neutral-400 mt-0.5 truncate">{heroProduct.brand} • {heroProduct.category}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <span className="text-lg font-extrabold text-primary-400">{formatPrice(heroProduct.price)}</span>
-                    {heroProduct.originalPrice && heroProduct.originalPrice > heroProduct.price && (
-                      <p className="text-[10px] text-neutral-500 line-through">{formatPrice(heroProduct.originalPrice)}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Category Grid ───────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+      {/* ─── Category Grid Anchor Section ───────────────────────────────────── */}
+      <section id="shop-section" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8 pt-6 scroll-mt-24">
         <div className="text-center md:text-left space-y-1">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">Shop by Category</h2>
-          <p className="text-sm text-neutral-500 max-w-md">Browse our wide catalog of high-quality products curated for you.</p>
+          <p className="text-sm text-neutral-600 max-w-md">Explore our luxury pret, unstitched, and designer collections.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 sm:gap-6">
