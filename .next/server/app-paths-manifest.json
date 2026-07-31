@@ -1,14 +1,3 @@
 {
-  "/account/page": "app/account/page.js",
-  "/api/products/[id]/route": "app/api/products/[id]/route.js",
-  "/checkout/page": "app/checkout/page.js",
-  "/api/products/route": "app/api/products/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/wishlist/page": "app/wishlist/page.js",
-  "/cart/page": "app/cart/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/search/page": "app/search/page.js",
-  "/products/[slug]/page": "app/products/[slug]/page.js",
-  "/page": "app/page.js",
-  "/products/page": "app/products/page.js"
+  "/page": "app/page.js"
 }

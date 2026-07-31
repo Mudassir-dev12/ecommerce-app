@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { ArrowRight, Percent, ShieldCheck, Zap } from 'lucide-react';
 import { getFeaturedProducts, getCategories } from '@/lib/api';
 import { ProductCard } from '@/components/product/ProductCard';
-import { HeroSlider } from '@/components/home/HeroSlider';
+import { HeroScrollBanners } from '@/components/home/HeroScrollBanners';
 import { formatPrice } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -19,8 +19,8 @@ export default async function HomePage() {
   return (
     <div className="space-y-16 pb-16">
       
-      {/* ─── Full-Screen Hero Banner Carousel (1.jpg, 2.jpg, 3.jpg) ───────── */}
-      <HeroSlider />
+      {/* ─── Full-Screen Vertical Scroll Banners (1.jpg -> 2.jpg -> 3.jpg) ─ */}
+      <HeroScrollBanners />
 
       {/* ─── Category Grid Anchor Section ───────────────────────────────────── */}
       <section id="shop-section" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8 pt-6 scroll-mt-24">
