@@ -64,44 +64,42 @@ export function HeroScrollBanners() {
     const track = trackRef.current;
     if (!container || !track) return;
 
-    const getScrollAmount = () => {
-      return track.scrollWidth - window.innerWidth;
-    };
+    const totalHeight = () => (BANNERS.length - 1) * window.innerHeight;
 
     const ctx = gsap.context(() => {
-      // Pin hero section and convert vertical mouse scroll into smooth horizontal movement
+      // Main Vertical Pin Animation with Scrub (Top to Bottom Slide Motion)
       const scrollTween = gsap.to(track, {
-        x: () => -getScrollAmount(),
+        yPercent: -100 * ((BANNERS.length - 1) / BANNERS.length),
         ease: 'none',
         scrollTrigger: {
           trigger: container,
           pin: true,
           scrub: 1.2, // Cinematic 1.2s smooth scrub lag
           start: 'top top+=80', // Align right under 80px sticky header
-          end: () => `+=${getScrollAmount()}`,
+          end: () => `+=${totalHeight()}`,
           invalidateOnRefresh: true,
           anticipatePin: 1,
         },
       });
 
-      // Parallax image scale (108% -> 100%) and text fade-in per panel
-      const panels = gsap.utils.toArray<HTMLElement>('.hero-slide');
+      // Subtle Image Scale (105% -> 100%) and Parallax per panel
+      const panels = gsap.utils.toArray<HTMLElement>('.hero-slide-vert');
       panels.forEach((panel) => {
-        const image = panel.querySelector('.hero-bg-img');
-        const textContent = panel.querySelector('.hero-text-content');
+        const image = panel.querySelector('.hero-bg-img-vert');
+        const textContent = panel.querySelector('.hero-text-content-vert');
 
         if (image) {
           gsap.fromTo(
             image,
-            { scale: 1.08 },
+            { scale: 1.05 },
             {
               scale: 1.0,
               ease: 'power1.out',
               scrollTrigger: {
                 trigger: panel,
                 containerAnimation: scrollTween,
-                start: 'left center',
-                end: 'right center',
+                start: 'top bottom',
+                end: 'bottom top',
                 scrub: true,
               },
             }
@@ -111,7 +109,7 @@ export function HeroScrollBanners() {
         if (textContent) {
           gsap.fromTo(
             textContent,
-            { y: 35, opacity: 0.3 },
+            { y: 45, opacity: 0.2 },
             {
               y: 0,
               opacity: 1,
@@ -119,7 +117,7 @@ export function HeroScrollBanners() {
               scrollTrigger: {
                 trigger: panel,
                 containerAnimation: scrollTween,
-                start: 'left 80%',
+                start: 'top 80%',
                 end: 'center center',
                 scrub: true,
               },
@@ -143,20 +141,20 @@ export function HeroScrollBanners() {
       ref={containerRef}
       className="relative w-full h-[calc(100vh-80px)] overflow-hidden bg-neutral-950 select-none"
     >
-      {/* Horizontal Track (300vw for 3 banners) */}
+      {/* Vertical Track (300vh for 3 vertical panels) */}
       <div
         ref={trackRef}
-        className="flex flex-nowrap w-[300vw] h-full will-change-transform"
+        className="flex flex-col w-full h-[300%] will-change-transform"
         style={{ force3D: true } as React.CSSProperties}
       >
         {BANNERS.map((banner, index) => (
           <section
             key={banner.id}
-            className="hero-slide relative w-screen h-full flex-shrink-0 overflow-hidden bg-neutral-950 rounded-none border-none"
+            className="hero-slide-vert relative w-full h-1/3 flex-shrink-0 overflow-hidden bg-neutral-950 rounded-none border-none"
           >
             <div className="relative w-full h-full rounded-none overflow-hidden">
-              {/* Background Image */}
-              <div className="hero-bg-img absolute inset-0 w-full h-full will-change-transform">
+              {/* Background Image with Scale Animation */}
+              <div className="hero-bg-img-vert absolute inset-0 w-full h-full will-change-transform">
                 <Image
                   src={banner.image}
                   alt={banner.title}
@@ -167,7 +165,7 @@ export function HeroScrollBanners() {
                 />
               </div>
 
-              {/* Dark Gradient Overlay */}
+              {/* Dark Gradient Overlays */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#131213]/90 via-[#131213]/35 to-[#131213]/25" />
               <div className="absolute inset-0 bg-gradient-to-r from-[#131213]/70 via-transparent to-[#131213]/40" />
 
@@ -180,8 +178,8 @@ export function HeroScrollBanners() {
                 </span>
               </div>
 
-              {/* Content Overlay */}
-              <div className="hero-text-content absolute inset-0 flex items-center z-10 will-change-transform">
+              {/* Full Screen Luxury Typography Overlay */}
+              <div className="hero-text-content-vert absolute inset-0 flex items-center z-10 will-change-transform">
                 <div className="mx-auto max-w-7xl px-6 sm:px-12 lg:px-16 w-full">
                   <div className="max-w-2xl space-y-4 text-white">
                     <span className="inline-block text-base sm:text-xl font-serif italic text-[#F1A19B] tracking-widest drop-shadow-md">
@@ -207,10 +205,10 @@ export function HeroScrollBanners() {
                 </div>
               </div>
 
-              {/* Scroll Direction Indicator */}
+              {/* Vertical Scroll Direction Prompt */}
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 text-white/80 animate-bounce">
                 <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-[#FAEAD9]/90">
-                  {index < BANNERS.length - 1 ? 'Scroll mouse wheel to explore →' : 'Scroll down to shop ↓'}
+                  {index < BANNERS.length - 1 ? 'Scroll down for next collection ↓' : 'Scroll down to shop ↓'}
                 </span>
                 <ChevronDown className="h-4 w-4 text-[#B57A20]" />
               </div>
