@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronDown, ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 
 interface BannerItem {
   id: number;
@@ -47,57 +47,95 @@ const BANNERS: BannerItem[] = [
 
 export function HeroScrollBanners() {
   return (
-    <div className="relative w-full flex flex-col">
-      {BANNERS.map((banner, index) => (
-        <section
-          key={banner.id}
-          className="relative w-full h-[calc(100vh-80px)] min-h-[600px] overflow-hidden flex items-center justify-center select-none border-b border-[#e7dccb]/40"
-        >
-          {/* Full-bleed background image */}
-          <div className="relative w-full h-full">
-            <Image
-              src={banner.image}
-              alt={banner.title}
-              fill
-              priority={index === 0}
-              className="object-cover object-center"
-            />
+    <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-12">
+      
+      {/* Header Label */}
+      <div className="text-center space-y-2 mb-4">
+        <span className="inline-block text-xs font-extrabold uppercase tracking-[0.25em] text-[#B57A20] bg-[#FAEAD9] border border-[#e7dccb] px-4 py-1.5 rounded-full shadow-2xs">
+          ✨ Modern Traders • Womens Arrival
+        </span>
+        <h2 className="text-3xl sm:text-4xl font-serif font-extrabold text-[#131213] tracking-tight">
+          Featured Luxury Collections
+        </h2>
+        <p className="text-sm text-neutral-600 max-w-md mx-auto">
+          Scroll down to reveal our exclusive high-fashion seasonal banners.
+        </p>
+      </div>
 
-            {/* Gradient Overlays for High Luxury Contrast */}
-            <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-neutral-950/35 to-neutral-950/25" />
-            <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/50 via-transparent to-neutral-950/50" />
-          </div>
+      {/* Sticky Overlapping Stacking Cards Container */}
+      <div className="relative w-full space-y-12">
+        {BANNERS.map((banner, index) => {
+          // Calculate top offset and z-index for overlapping stack effect
+          const topOffset = 100 + index * 28; // 100px, 128px, 156px
+          const zIndex = (index + 1) * 10;   // 10, 20, 30
 
-          {/* Center Luxury Typography Overlay */}
-          <div className="absolute z-10 max-w-4xl text-center px-6 text-white space-y-4 animate-fade-in">
-            <span className="inline-block text-base sm:text-xl font-serif italic text-[#F1A19B] tracking-widest drop-shadow-md">
-              {banner.subtitle}
-            </span>
+          return (
+            <div
+              key={banner.id}
+              style={{
+                position: 'sticky',
+                top: `${topOffset}px`,
+                zIndex: zIndex,
+              }}
+              className="w-full h-[calc(100vh-160px)] min-h-[520px] max-h-[780px] rounded-3xl overflow-hidden shadow-2xl border border-[#e7dccb] bg-[#131213] transition-all duration-500 transform group"
+            >
+              {/* Full Background Image */}
+              <div className="relative w-full h-full">
+                <Image
+                  src={banner.image}
+                  alt={banner.title}
+                  fill
+                  priority={index === 0}
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-1000"
+                />
 
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight uppercase font-serif leading-tight drop-shadow-lg">
-              {banner.title} <br />
-              <span className="text-[#B57A20] font-sans font-extrabold normal-case tracking-normal block mt-2">
-                {banner.highlight}
-              </span>
-            </h1>
+                {/* Luxury Dark Gradients */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#131213]/90 via-[#131213]/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#131213]/60 via-transparent to-transparent" />
 
-            <div className="pt-4">
-              <Link href={banner.link}>
-                <span className="inline-flex items-center gap-2 rounded-xl bg-[#B57A20] hover:bg-[#9f641a] text-white px-8 py-4 text-base font-bold shadow-xl shadow-amber-950/40 transition-all transform hover:scale-105 cursor-pointer">
-                  <span>{banner.buttonText}</span>
-                  <ArrowRight className="h-5 w-5" />
-                </span>
-              </Link>
+                {/* Number Badge (01, 02, 03) */}
+                <div className="absolute top-6 right-8 z-20 flex items-center gap-2 bg-[#131213]/70 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full">
+                  <span className="text-xs font-bold text-[#F1A19B] tracking-wider uppercase">Collection</span>
+                  <span className="text-base font-black text-[#B57A20] font-mono">
+                    0{banner.id}
+                  </span>
+                </div>
+
+                {/* Content Overlay */}
+                <div className="absolute bottom-10 left-8 right-8 sm:left-12 sm:right-12 z-20 space-y-3 max-w-2xl text-white">
+                  <span className="inline-block text-sm sm:text-base font-serif italic text-[#F1A19B] tracking-widest">
+                    {banner.subtitle}
+                  </span>
+
+                  <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight uppercase font-serif leading-tight text-white drop-shadow-md">
+                    {banner.title} <br />
+                    <span className="text-[#B57A20] font-sans font-extrabold normal-case tracking-normal block mt-1">
+                      {banner.highlight}
+                    </span>
+                  </h2>
+
+                  <div className="pt-2">
+                    <Link href={banner.link}>
+                      <span className="inline-flex items-center gap-2 rounded-xl bg-[#B57A20] hover:bg-[#9f641a] text-white px-7 py-3.5 text-sm sm:text-base font-bold shadow-xl shadow-amber-950/40 transition-all transform hover:scale-105 cursor-pointer">
+                        <span>{banner.buttonText}</span>
+                        <ArrowRight className="h-4.5 w-4.5" />
+                      </span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Scroll Indicator */}
+                {index === 0 && (
+                  <div className="absolute bottom-4 right-8 z-20 hidden sm:flex items-center gap-1.5 text-xs text-[#FAEAD9]/80 animate-bounce">
+                    <span className="font-bold tracking-wider">Scroll down to stack banners</span>
+                    <ChevronDown className="h-4 w-4 text-[#B57A20]" />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-
-          {/* Scroll Down Chevron Indicator */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 text-white/80 animate-bounce">
-            <span className="text-[10px] uppercase font-bold tracking-widest text-[#FAEAD9]">Scroll Down</span>
-            <ChevronDown className="h-5 w-5 text-[#B57A20]" />
-          </div>
-        </section>
-      ))}
+          );
+        })}
+      </div>
     </div>
   );
 }
