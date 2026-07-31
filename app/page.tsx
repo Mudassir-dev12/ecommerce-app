@@ -22,39 +22,31 @@ export default async function HomePage() {
       {/* ─── Full-Screen Vertical Scroll Banners (1.jpg -> 2.jpg -> 3.jpg) ─ */}
       <HeroScrollBanners />
 
-      {/* ─── Category Grid Anchor Section ───────────────────────────────────── */}
-      <section id="shop-section" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8 pt-6 scroll-mt-24">
-        <div className="text-center md:text-left space-y-1">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">Shop by Category</h2>
-          <p className="text-sm text-neutral-600 max-w-md">Explore our luxury pret, unstitched, and designer collections.</p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 sm:gap-6">
+      {/* ─── Circular Story Avatar Categories (Dynamic) ──────────────────────── */}
+      <section id="shop-section" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6 pt-8 scroll-mt-24">
+        <div className="flex items-center justify-center gap-6 sm:gap-12 overflow-x-auto pb-4 pt-2 no-scrollbar flex-wrap">
           {categories.map((cat) => (
             <Link
               key={cat.id}
               href={`/products?category=${cat.slug}`}
-              className="group relative flex flex-col items-center justify-end overflow-hidden rounded-2xl bg-neutral-950 aspect-[3/4] p-4 text-center shadow-sm hover:shadow-md hover:scale-[1.02] transition-all"
+              className="group flex flex-col items-center shrink-0 cursor-pointer"
             >
-              {/* Background cover image */}
-              <Image
-                src={cat.image}
-                alt={cat.name}
-                fill
-                sizes="(max-w-768px) 30vw, 150px"
-                className="object-cover object-center opacity-40 group-hover:scale-105 group-hover:opacity-50 transition-all duration-500"
-              />
-              {/* Content overlay */}
-              <div className="relative z-10 w-full">
-                <span className="text-xs font-bold text-neutral-300 uppercase tracking-widest block mb-1">
-                  {cat.productCount} Items
-                </span>
-                <h3 className="text-base font-extrabold text-white leading-tight">
-                  {cat.name}
-                </h3>
+              {/* Circle Avatar Image Container matching user reference photo */}
+              <div className="relative h-24 w-24 sm:h-32 sm:w-32 rounded-full border-2 border-[#e7dccb] p-1 bg-white shadow-md group-hover:scale-105 group-hover:border-[#B57A20] transition-all duration-300">
+                <div className="relative h-full w-full rounded-full overflow-hidden">
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    sizes="(max-width: 768px) 96px, 128px"
+                    className="object-cover object-center group-hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
               </div>
-              {/* Gradient card border on hover */}
-              <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/85 via-neutral-950/20 to-transparent" />
+              {/* Bold Uppercase Title Label matching reference photo */}
+              <span className="mt-3 text-xs sm:text-sm font-extrabold tracking-widest text-[#131213] uppercase group-hover:text-[#B57A20] transition-colors">
+                {cat.name}
+              </span>
             </Link>
           ))}
         </div>
