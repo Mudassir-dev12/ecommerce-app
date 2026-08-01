@@ -27,7 +27,7 @@ export function ShippingForm({ onSubmit, initialData }: ShippingFormProps) {
       city: '',
       state: '',
       zip: '',
-      country: 'United States',
+      country: 'Pakistan',
       ...initialData,
     },
   });
@@ -42,13 +42,13 @@ export function ShippingForm({ onSubmit, initialData }: ShippingFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
           label="First Name"
-          placeholder="John"
+          placeholder="Name"
           error={errors.firstName?.message}
           {...register('firstName', { required: 'First name is required' })}
         />
         <Input
           label="Last Name"
-          placeholder="Doe"
+          placeholder="Last Name"
           error={errors.lastName?.message}
           {...register('lastName', { required: 'Last name is required' })}
         />
@@ -58,7 +58,7 @@ export function ShippingForm({ onSubmit, initialData }: ShippingFormProps) {
         <Input
           label="Email Address"
           type="email"
-          placeholder="john.doe@example.com"
+          placeholder="Email"
           error={errors.email?.message}
           {...register('email', {
             required: 'Email address is required',
@@ -71,7 +71,7 @@ export function ShippingForm({ onSubmit, initialData }: ShippingFormProps) {
         <Input
           label="Phone Number"
           type="tel"
-          placeholder="+1 (555) 000-0000"
+          placeholder="03000000000"
           error={errors.phone?.message}
           {...register('phone', { required: 'Phone number is required' })}
         />
@@ -95,19 +95,19 @@ export function ShippingForm({ onSubmit, initialData }: ShippingFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Input
           label="City"
-          placeholder="New York"
+          placeholder="Karachi"
           error={errors.city?.message}
           {...register('city', { required: 'City is required' })}
         />
         <Input
           label="State / Province"
-          placeholder="NY"
+          placeholder="Sindh"
           error={errors.state?.message}
           {...register('state', { required: 'State is required' })}
         />
         <Input
           label="ZIP / Postal Code"
-          placeholder="10001"
+          placeholder="75500"
           error={errors.zip?.message}
           {...register('zip', { required: 'Zip code is required' })}
         />
@@ -115,7 +115,7 @@ export function ShippingForm({ onSubmit, initialData }: ShippingFormProps) {
 
       <Input
         label="Country"
-        placeholder="United States"
+        placeholder="Pakistan"
         error={errors.country?.message}
         {...register('country', { required: 'Country is required' })}
       />

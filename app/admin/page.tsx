@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import {
   getProducts,
   getCategories,
@@ -42,11 +43,25 @@ import {
   CheckCircle,
   Upload,
   Image as ImageIcon,
+  Lock,
+  LogOut,
+  KeyRound,
+  Mail,
+  EyeOff,
 } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+
+  // Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authChecking, setAuthChecking] = useState<boolean>(true);
+  const [loginEmail, setLoginEmail] = useState<string>('');
+  const [loginPassword, setLoginPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [loginError, setLoginError] = useState<string>('');
+  const [loggingIn, setLoggingIn] = useState<boolean>(false);
 
   // Tab State
   const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
@@ -59,6 +74,94 @@ export default function AdminDashboardPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Check active Supabase session or persistent admin flag
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const isLocalAdmin = typeof window !== 'undefined' && localStorage.getItem('mt_admin_authenticated') === 'true';
+
+        if (session?.user?.email === 'mktradersofficial@gmail.com' || isLocalAdmin) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (err) {
+        setIsAuthenticated(false);
+      } finally {
+        setAuthChecking(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoggingIn(true);
+
+    try {
+      const cleanEmail = loginEmail.trim().toLowerCase();
+      const cleanPassword = loginPassword.trim();
+      const targetEmail = 'mktradersofficial@gmail.com';
+
+      const isEmailMatch = cleanEmail === targetEmail;
+      const isPasswordMatch =
+        cleanPassword.toLowerCase() === 'mkt1234@#' ||
+        cleanPassword.toLowerCase() === 'mkt1234@' ||
+        cleanPassword.toLowerCase() === 'mkt1234' ||
+        cleanPassword === 'MkT1234@#' ||
+        cleanPassword === 'MKT1234@#';
+
+      // Direct instant match for admin credentials
+      if (isEmailMatch && isPasswordMatch) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('mt_admin_authenticated', 'true');
+        }
+        setIsAuthenticated(true);
+        showToast('Welcome back, Admin!');
+        await fetchAdminData();
+        return;
+      }
+
+      // Try Supabase auth sign-in
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPassword,
+      });
+
+      if (!error && data?.user) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('mt_admin_authenticated', 'true');
+        }
+        setIsAuthenticated(true);
+        showToast('Welcome back, Admin!');
+        await fetchAdminData();
+        return;
+      }
+
+      setLoginError('Invalid email or password. Access denied.');
+    } catch (err: any) {
+      setLoginError(err.message || 'Login failed');
+    } finally {
+      setLoggingIn(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {}
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('mt_admin_authenticated');
+    }
+    setIsAuthenticated(false);
+    setLoginEmail('');
+    setLoginPassword('');
+    showToast('Signed out of Admin Console', 'error');
+  };
 
   // Orders State
   const [orders, setOrders] = useState<Order[]>([]);
@@ -405,6 +508,120 @@ export default function AdminDashboardPage() {
     }
   };
 
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-[#FAF6F0] flex flex-col items-center justify-center p-4 text-[#131213]">
+        <RefreshCw className="w-10 h-10 animate-spin text-[#B57A20] mb-3" />
+        <p className="text-sm font-bold tracking-wide">Verifying Admin Access...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#FAF6F0] flex flex-col justify-center items-center p-4 font-sans text-[#131213]">
+        <div className="w-full max-w-md bg-white border border-[#e7dccb] rounded-3xl p-8 shadow-xl space-y-6">
+          {/* Logo & Header */}
+          <div className="text-center space-y-3">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#FAF6F0] border border-[#e7dccb] p-2 mx-auto shadow-inner">
+              <img src="/logo1.png" alt="Modern Traders Logo" className="h-full w-full object-contain" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-extrabold text-[#131213] tracking-tight uppercase">
+                Admin Console Login
+              </h2>
+              <p className="text-xs text-neutral-500 mt-1">
+                Enter authorized credentials to access product catalog & customer orders.
+              </p>
+            </div>
+          </div>
+
+          {/* Login Error Alert */}
+          {loginError && (
+            <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-700 font-bold flex items-center gap-2 animate-shake">
+              <XCircle className="w-4 h-4 shrink-0 text-rose-600" />
+              <span>{loginError}</span>
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-1.5">
+                Admin Email
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input
+                  type="email"
+                  required
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  placeholder="Email"
+                  className="w-full pl-10 pr-4 py-3 bg-[#FAF6F0] border border-[#e7dccb] rounded-xl text-sm font-semibold text-[#131213] focus:outline-none focus:border-[#B57A20]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-1.5">
+                Admin Password
+              </label>
+              <div className="relative">
+                <KeyRound className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="w-full pl-10 pr-10 py-3 bg-[#FAF6F0] border border-[#e7dccb] rounded-xl text-sm font-semibold text-[#131213] focus:outline-none focus:border-[#B57A20]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-[#131213] p-1 transition-colors focus:outline-none"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loggingIn}
+              className="w-full py-3.5 px-4 bg-[#B57A20] hover:bg-[#8e5c12] text-white font-extrabold text-sm rounded-xl shadow-md transition-all transform hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2"
+            >
+              {loggingIn ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Verifying Credentials...</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-4 h-4" />
+                  <span>SIGN IN TO ADMIN CONSOLE</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Footer Back to Store Link */}
+          <div className="pt-4 border-t border-[#e7dccb] text-center">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-500 hover:text-[#B57A20] transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Storefront
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FAF6F0] text-[#131213] font-sans p-4 sm:p-8">
       {/* Toast Notification */}
@@ -478,6 +695,15 @@ export default function AdminDashboardPage() {
                 <Plus className="w-4 h-4" /> Add Product
               </button>
             )}
+
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold px-4 py-2.5 rounded-xl transition-all text-sm shadow-sm"
+              title="Sign out of Admin Console"
+            >
+              <LogOut className="w-4 h-4 text-rose-600" />
+              Sign Out
+            </button>
           </div>
         </div>
 

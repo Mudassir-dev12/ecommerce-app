@@ -4,6 +4,7 @@ import * as React from 'react';
 import type { PaymentFormData } from '@/types';
 import { Button } from '../ui/Button';
 import { Banknote, ShieldCheck, CheckCircle2, Truck } from 'lucide-react';
+import { formatPrice } from '@/lib/utils';
 
 export interface PaymentFormProps {
   onSubmit: (data: PaymentFormData) => void;
@@ -54,7 +55,7 @@ export function PaymentForm({ onSubmit, onBack }: PaymentFormProps) {
 
           <div className="text-right shrink-0">
             <span className="text-xs font-bold text-primary-700 bg-white border border-primary-200 px-2.5 py-1 rounded-lg shadow-2xs">
-              +$300 Delivery Fee
+              +{formatPrice(300)} Delivery Fee
             </span>
           </div>
         </div>
@@ -62,7 +63,7 @@ export function PaymentForm({ onSubmit, onBack }: PaymentFormProps) {
         <div className="border-t border-primary-100/80 pt-3.5 flex items-center justify-between text-xs text-neutral-600">
           <div className="flex items-center gap-1.5 font-semibold text-neutral-800">
             <Truck className="h-4 w-4 text-primary-600" />
-            <span>Delivery Charge: <strong className="text-primary-700 font-extrabold">$300.00</strong></span>
+            <span>Delivery Charge: <strong className="text-primary-700 font-extrabold">{formatPrice(300)}</strong></span>
           </div>
           <div className="flex items-center gap-1 text-emerald-600 font-bold">
             <ShieldCheck className="h-4 w-4" />

@@ -66,7 +66,7 @@ export function OrderReview({
             </p>
             <div className="pt-1">
               <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2 py-0.5 rounded-md border border-emerald-200">
-                COD Delivery Charge: $300.00
+                COD Delivery Charge: {formatPrice(300)}
               </span>
             </div>
           </div>
