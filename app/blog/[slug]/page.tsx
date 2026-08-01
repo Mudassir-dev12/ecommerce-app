@@ -2,8 +2,9 @@ import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Clock, Calendar, Share2, Tag, ChevronRight, BookOpen } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, Tag, ChevronRight, BookOpen } from 'lucide-react';
 import { blogPosts } from '@/data/blogs';
+import { ShareButton } from '@/components/blog/ShareButton';
 
 interface BlogDetailPageProps {
   params: {
@@ -87,18 +88,7 @@ export default function BlogDetailPage({ params }: BlogDetailPageProps) {
             {/* Share / Tags */}
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider mr-1">Share:</span>
-              <button
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    navigator.clipboard?.writeText(window.location.href);
-                    alert('Article link copied to clipboard!');
-                  }
-                }}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-neutral-200 text-neutral-700 hover:border-[#B57A20] hover:text-[#B57A20] shadow-sm transition-colors"
-                aria-label="Share article"
-              >
-                <Share2 className="h-4 w-4" />
-              </button>
+              <ShareButton />
             </div>
           </div>
         </header>
