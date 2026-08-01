@@ -74,7 +74,7 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-4 group">
               <Image
-                src="/pnglogo.png"
+                src="/logo2.png"
                 alt="Modern Traders Logo"
                 width={52}
                 height={52}

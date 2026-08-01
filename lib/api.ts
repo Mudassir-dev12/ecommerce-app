@@ -436,6 +436,31 @@ export async function createOrder(orderData: Partial<Order>): Promise<Order> {
       orderData.trackingNumber || `TRK${Math.floor(100000000 + Math.random() * 900000000)}`,
   };
 
+  // 0. Automatically decrement product stock for all purchased items
+  if (newOrder.items && newOrder.items.length > 0) {
+    for (const item of newOrder.items) {
+      try {
+        const itemSlugOrId = item.productId || item.slug;
+        if (!itemSlugOrId) continue;
+
+        const product = await getProductBySlug(itemSlugOrId);
+        if (product) {
+          const currentStock = Number(product.stockCount || 0);
+          const purchasedQty = Number(item.quantity || 1);
+          const newStockCount = Math.max(0, currentStock - purchasedQty);
+          const newInStock = newStockCount > 0;
+
+          await updateProduct(product.id, {
+            stockCount: newStockCount,
+            inStock: newInStock,
+          });
+        }
+      } catch (err) {
+        console.warn('Notice: Failed to update product stock for item:', item.name, err);
+      }
+    }
+  }
+
   // 1. Save to local storage immediately so it's instantly available
   const currentOrders = getLocalOrders();
   const updatedOrders = [newOrder, ...currentOrders.filter((o) => o.id !== id)];
@@ -717,7 +742,9 @@ export async function createProduct(productData: Partial<Product>): Promise<Prod
 
 export async function updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
   const stockCount = updates.stockCount !== undefined ? Number(updates.stockCount) : undefined;
-  const inStock = updates.inStock !== undefined ? Boolean(updates.inStock) : (stockCount !== undefined ? stockCount > 0 : undefined);
+  const inStock = stockCount !== undefined
+    ? stockCount > 0
+    : (updates.inStock !== undefined ? Boolean(updates.inStock) : undefined);
   const categorySlug = updates.categorySlug || undefined;
   const categoryName = updates.category || undefined;
 
@@ -792,6 +819,10 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
   }
   localProductsStore = currentList;
   saveLocalProducts(currentList);
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('order-placed'));
+  }
 
   return updatedProduct;
 }

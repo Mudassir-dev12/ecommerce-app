@@ -108,6 +108,29 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         </p>
       </section>
 
+      {/* ─── Wholesale / Bulk Inquiry Section (Directly After Product Overview) ─── */}
+      <section className="rounded-2xl border border-[#800000]/30 bg-[#fff7f7] p-5 sm:p-6 md:p-8 transition-all hover:border-[#800000]/60 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
+          <div className="space-y-1 max-w-xl">
+            <h4 className="text-lg sm:text-xl font-extrabold tracking-wider text-[#800000] uppercase">
+              WHOLESALE / BULK INQUIRY
+            </h4>
+            <p className="text-xs sm:text-sm text-neutral-600 font-medium">
+              Looking to buy in bulk? Get special discounted rates.
+            </p>
+          </div>
+
+          <a
+            href={`https://wa.me/923192828729?text=${encodeURIComponent(`Hello! I am interested in wholesale / bulk purchase for "${product.name}". Please provide special discounted rates.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-7 py-3 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs sm:text-sm font-extrabold uppercase tracking-wider shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95 shrink-0"
+          >
+            CHAT NOW
+          </a>
+        </div>
+      </section>
+
       {/* ─── Customer Reviews Section ─── */}
       <section className="border-t border-neutral-150 pt-12 space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

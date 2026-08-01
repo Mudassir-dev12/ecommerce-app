@@ -105,9 +105,16 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
             fill
             sizes="(max-w-640px) 100vw, 192px"
             priority={product.isFeatured}
-            className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+            className={cn(
+              'object-cover object-center group-hover:scale-105 transition-transform duration-500',
+              !isAvailable && 'opacity-60 grayscale-[20%]'
+            )}
           />
-          {product.discount && product.discount > 0 ? (
+          {!isAvailable ? (
+            <span className="absolute left-3 top-3 z-10 rounded-md bg-rose-600 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white shadow-md">
+              SOLD OUT
+            </span>
+          ) : product.discount && product.discount > 0 ? (
             <Badge variant="danger" className="absolute left-3 top-3">
               -{product.discount}%
             </Badge>
@@ -144,7 +151,16 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
 
             {/* CTAs */}
             <div className="flex gap-2">
-              {hasVariants ? (
+              {!isAvailable ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  className="gap-1.5 font-bold text-rose-600 bg-rose-50 border-rose-200 cursor-not-allowed opacity-80"
+                >
+                  Sold Out
+                </Button>
+              ) : hasVariants ? (
                 <Link href={`/products/${product.slug}`}>
                   <Button variant="outline" size="sm" className="gap-1.5">
                     <Eye className="h-4 w-4" />
@@ -160,7 +176,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
                   className="gap-1.5"
                 >
                   <ShoppingBag className="h-4 w-4" />
-                  <span>{isAvailable ? 'Add' : 'Out of Stock'}</span>
+                  <span>Add</span>
                 </Button>
               )}
             </div>
@@ -198,9 +214,16 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
             fill
             sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 250px"
             priority={product.isFeatured}
-            className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+            className={cn(
+              'object-cover object-center group-hover:scale-105 transition-transform duration-500',
+              !isAvailable && 'opacity-60 grayscale-[20%]'
+            )}
           />
-          {product.discount && product.discount > 0 ? (
+          {!isAvailable ? (
+            <span className="absolute left-3 top-3 z-10 rounded-md bg-rose-600 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white shadow-md">
+              SOLD OUT
+            </span>
+          ) : product.discount && product.discount > 0 ? (
             <Badge variant="danger" className="absolute left-3 top-3">
               -{product.discount}%
             </Badge>
@@ -236,7 +259,16 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
         </div>
 
         {/* CTAs */}
-        {hasVariants ? (
+        {!isAvailable ? (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            className="h-9 px-3.5 text-xs font-bold text-rose-600 bg-rose-50 border-rose-200 cursor-not-allowed opacity-80"
+          >
+            Sold Out
+          </Button>
+        ) : hasVariants ? (
           <Link href={`/products/${product.slug}`}>
             <Button variant="outline" size="sm" className="h-9 px-3.5 text-xs font-semibold">
               Options
@@ -251,7 +283,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
             className="h-9 px-3.5 text-xs font-semibold gap-1"
           >
             <ShoppingBag className="h-3.5 w-3.5" />
-            <span>{isAvailable ? 'Add' : 'Out of Stock'}</span>
+            <span>Add</span>
           </Button>
         )}
       </div>

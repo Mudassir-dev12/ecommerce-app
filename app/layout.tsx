@@ -1,14 +1,13 @@
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { Navbar } from '@/components/layout/Navbar';
-import { Footer } from '@/components/layout/Footer';
+import { Montserrat } from 'next/font/google';
 import { Providers } from './providers';
+import { SiteShell } from '@/components/layout/SiteShell';
 import './globals.css';
 
-const inter = Inter({
+const montserrat = Montserrat({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-montserrat',
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
   display: 'swap',
 });
 
@@ -16,7 +15,7 @@ export const metadata: Metadata = {
   title: 'Modern Traders - Womens Arrival | Luxury Women Fashion',
   description: 'Shop luxury women dresses, pret collection, couture and boutique fashion at Modern Traders - Womens Arrival.',
   icons: {
-    icon: '/pnglogo.png',
+    icon: '/logo1.png',
   },
 };
 
@@ -26,16 +25,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable}`}>
+    <html lang="en" className={`${montserrat.variable}`}>
       <body className="flex min-h-screen flex-col bg-neutral-50 text-neutral-900 antialiased font-sans">
         <Providers>
-          <Suspense fallback={<div className="h-16 bg-white border-b border-neutral-100" />}>
-            <Navbar />
-          </Suspense>
-          <main className="flex-1">
+          <SiteShell>
             {children}
-          </main>
-          <Footer />
+          </SiteShell>
         </Providers>
       </body>
     </html>

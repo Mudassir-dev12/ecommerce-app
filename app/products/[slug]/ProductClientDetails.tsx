@@ -22,6 +22,8 @@ export function ProductClientDetails({ product }: ProductClientDetailsProps) {
   const toggleWishlist = useStore((state) => state.toggleWishlist);
   const isInWishlist = useStore((state) => state.isInWishlist(product.id));
 
+  const isAvailable = Boolean(product.inStock) && Number(product.stockCount || 0) > 0;
+
   // Extract variants by type
   const colorVariants = product.variants.filter((v) => v.type === 'color');
   const sizeVariants = product.variants.filter((v) => v.type === 'size');
@@ -52,14 +54,14 @@ export function ProductClientDetails({ product }: ProductClientDetailsProps) {
 
   const handleQtyChange = (val: number) => {
     const nextQty = quantity + val;
-    if (nextQty >= 1 && nextQty <= product.stockCount) {
+    if (nextQty >= 1 && nextQty <= (product.stockCount || 0)) {
       setQuantity(nextQty);
     }
   };
 
   const handleAddToCart = () => {
-    if (!product.inStock) {
-      toast('This product is out of stock.', 'error');
+    if (!isAvailable) {
+      toast('This product is currently out of stock.', 'error');
       return;
     }
 
@@ -82,8 +84,8 @@ export function ProductClientDetails({ product }: ProductClientDetailsProps) {
   };
 
   const handleBuyNow = () => {
-    if (!product.inStock) {
-      toast('This product is out of stock.', 'error');
+    if (!isAvailable) {
+      toast('This product is currently out of stock.', 'error');
       return;
     }
 
@@ -116,7 +118,7 @@ export function ProductClientDetails({ product }: ProductClientDetailsProps) {
       originalPrice: product.originalPrice,
       image: product.images[0]?.url || '',
       rating: product.rating,
-      inStock: product.inStock,
+      inStock: isAvailable,
     });
 
     toast(
@@ -130,6 +132,13 @@ export function ProductClientDetails({ product }: ProductClientDetailsProps) {
   return (
     <div className="space-y-6">
       
+      {!isAvailable && (
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 text-rose-700 font-bold text-xs sm:text-sm flex items-center gap-2.5 shadow-sm">
+          <span className="flex h-2.5 w-2.5 rounded-full bg-rose-600 animate-ping shrink-0" />
+          <span>This product is currently SOLD OUT and no longer available for purchase.</span>
+        </div>
+      )}
+
       {/* ─── Price Section ─── */}
       <div className="flex items-baseline gap-3 border-y border-neutral-100 py-4">
         <span className="text-3xl font-extrabold text-neutral-900">{formatPrice(currentPrice)}</span>
@@ -185,7 +194,7 @@ export function ProductClientDetails({ product }: ProductClientDetailsProps) {
                 <button
                   key={sz.id}
                   onClick={() => setSelectedSize(sz.value)}
-                  disabled={!sz.inStock}
+                  disabled={!sz.inStock || !isAvailable}
                   className={cn(
                     'flex h-10 min-w-10 items-center justify-center rounded-lg border text-sm font-bold transition-all px-3.5 focus:outline-none disabled:opacity-30 disabled:pointer-events-none active:scale-95',
                     isSelected
@@ -208,18 +217,18 @@ export function ProductClientDetails({ product }: ProductClientDetailsProps) {
           <div className="flex items-center rounded-lg border border-neutral-200 bg-neutral-50 p-1 shrink-0">
             <button
               onClick={() => handleQtyChange(-1)}
-              disabled={quantity <= 1}
+              disabled={!isAvailable || quantity <= 1}
               className="p-1.5 text-neutral-500 hover:text-neutral-900 disabled:opacity-30 disabled:pointer-events-none rounded"
               aria-label="Decrease quantity"
             >
               <Minus className="h-4.5 w-4.5" />
             </button>
             <span className="w-10 text-center text-sm font-bold text-neutral-800">
-              {quantity}
+              {isAvailable ? quantity : 0}
             </span>
             <button
               onClick={() => handleQtyChange(1)}
-              disabled={quantity >= product.stockCount}
+              disabled={!isAvailable || quantity >= product.stockCount}
               className="p-1.5 text-neutral-500 hover:text-neutral-900 disabled:opacity-30 disabled:pointer-events-none rounded"
               aria-label="Increase quantity"
             >
@@ -229,12 +238,12 @@ export function ProductClientDetails({ product }: ProductClientDetailsProps) {
           
           {/* Stock badge */}
           <div>
-            {product.inStock ? (
+            {isAvailable ? (
               <span className="text-xs font-semibold text-emerald-600">
                 In Stock ({product.stockCount} available)
               </span>
             ) : (
-              <span className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded px-2 py-0.5">
+              <span className="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded px-2.5 py-1">
                 Out of Stock
               </span>
             )}
@@ -261,22 +270,22 @@ export function ProductClientDetails({ product }: ProductClientDetailsProps) {
         <Button
           onClick={handleAddToCart}
           variant="outline"
-          disabled={!product.inStock}
-          className="flex-1 sm:h-12 gap-2 text-sm font-bold rounded-xl"
+          disabled={!isAvailable}
+          className="flex-1 sm:h-12 gap-2 text-sm font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ShoppingBag className="h-4.5 w-4.5" />
-          <span>Add to Cart</span>
+          <span>{isAvailable ? 'Add to Cart' : 'Out of Stock'}</span>
         </Button>
 
         {/* Buy Now */}
         <Button
           onClick={handleBuyNow}
           variant="primary"
-          disabled={!product.inStock}
-          className="flex-1 sm:h-12 gap-2 text-sm font-bold rounded-xl shadow-glow"
+          disabled={!isAvailable}
+          className="flex-1 sm:h-12 gap-2 text-sm font-bold rounded-xl shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <CreditCard className="h-4.5 w-4.5" />
-          <span>Buy It Now</span>
+          <span>{isAvailable ? 'Buy It Now' : 'Sold Out'}</span>
         </Button>
       </div>
 

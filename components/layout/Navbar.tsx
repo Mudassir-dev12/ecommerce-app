@@ -50,7 +50,7 @@ export function Navbar() {
           {/* LEFT: BIGGER LOGO */}
           <Link href="/" className="flex items-center shrink-0">
             <Image
-              src="/pnglogo.png"
+              src="/logo1.png"
               alt="Modern Traders Logo"
               width={96}
               height={96}

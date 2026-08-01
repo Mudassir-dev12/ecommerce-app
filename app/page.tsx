@@ -1,50 +1,59 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Percent, ShieldCheck, Zap } from 'lucide-react';
-import { getFeaturedProducts, getCategories } from '@/lib/api';
-import { ProductCard } from '@/components/product/ProductCard';
+import { Percent, ShieldCheck, Zap } from 'lucide-react';
+import { getProducts, getCategories } from '@/lib/api';
 import { HeroScrollBanners } from '@/components/home/HeroScrollBanners';
-import { formatPrice } from '@/lib/utils';
+import { ProductCarouselSection } from '@/components/product/ProductCarouselSection';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function HomePage() {
-  const [featuredProducts, categories] = await Promise.all([
-    getFeaturedProducts(8),
+  const [productsRes, categories] = await Promise.all([
+    getProducts({}, 'featured', 1, 30),
     getCategories(),
   ]);
+
+  const products = productsRes.products || [];
+
+  // Group dynamic products for 3 distinct category sliders
+  const section1Products = products.length > 0 ? products : [];
+  const section2Products = products.length >= 4 ? [...products.slice(4), ...products.slice(0, 4)] : products;
+  const section3Products = products.length >= 8 ? [...products.slice(8), ...products.slice(0, 8)] : products;
+
+  // Category labels dynamically derived from fetched categories
+  const cat1 = categories[0] || { name: 'Pret Collection', slug: 'pret' };
+  const cat2 = categories[1] || { name: 'Unstitched', slug: 'unstitched' };
+  const cat3 = categories[2] || { name: 'Luxury Fragrances', slug: 'him' };
 
   return (
     <div className="space-y-16 pb-16">
       
-      {/* ─── Full-Screen Vertical Scroll Banners (1.jpg -> 2.jpg -> 3.jpg) ─ */}
+      {/* ─── Full-Screen Vertical Scroll Banners ─ */}
       <HeroScrollBanners />
 
       {/* ─── Circular Story Avatar Categories (Dynamic) ──────────────────────── */}
       <section id="shop-section" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6 pt-8 scroll-mt-24">
-        <div className="flex items-center justify-center gap-6 sm:gap-12 overflow-x-auto pb-4 pt-2 no-scrollbar flex-wrap">
-          {categories.map((cat) => (
+        <div className="flex items-center justify-start sm:justify-center gap-4 sm:gap-8 md:gap-10 overflow-x-auto pb-4 pt-2 no-scrollbar flex-nowrap">
+          {categories.slice(0, 6).map((cat) => (
             <Link
               key={cat.id}
               href={`/products?category=${cat.slug}`}
               className="group flex flex-col items-center shrink-0 cursor-pointer"
             >
-              {/* Circle Avatar Image Container matching user reference photo */}
-              <div className="relative h-24 w-24 sm:h-32 sm:w-32 rounded-full border-2 border-[#e7dccb] p-1 bg-white shadow-md group-hover:scale-105 group-hover:border-[#B57A20] transition-all duration-300">
+              <div className="relative h-20 w-20 sm:h-28 sm:w-28 rounded-full border-2 border-[#e7dccb] p-1 bg-white shadow-md group-hover:scale-105 group-hover:border-[#B57A20] transition-all duration-300">
                 <div className="relative h-full w-full rounded-full overflow-hidden">
                   <Image
                     src={cat.image}
                     alt={cat.name}
                     fill
-                    sizes="(max-width: 768px) 96px, 128px"
+                    sizes="(max-width: 768px) 80px, 112px"
                     className="object-cover object-center group-hover:scale-110 transition-transform duration-500"
                   />
                 </div>
               </div>
-              {/* Bold Uppercase Title Label matching reference photo */}
-              <span className="mt-3 text-xs sm:text-sm font-extrabold tracking-widest text-[#131213] uppercase group-hover:text-[#B57A20] transition-colors">
+              <span className="mt-3 text-xs sm:text-sm font-extrabold tracking-widest text-[#131213] uppercase group-hover:text-[#B57A20] transition-colors text-center whitespace-nowrap">
                 {cat.name}
               </span>
             </Link>
@@ -52,24 +61,77 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── Featured Products ───────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="space-y-1 text-center sm:text-left">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">Featured Products</h2>
-            <p className="text-sm text-neutral-500">Handpicked items that represent our finest quality and design.</p>
-          </div>
-          <Link href="/products" className="group flex items-center gap-1 text-sm font-bold text-primary-600 hover:text-primary-700 transition-all">
-            <span>View All Products</span>
-            <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-        </div>
+      {/* ─── Product Carousel #1 (After Categories) ───────────────────────── */}
+      <ProductCarouselSection
+        title={`${cat1.name} Collection`}
+        subtitle="Explore our finest handpicked fashion items"
+        categorySlug={cat1.slug}
+        products={section1Products}
+        autoPlayInterval={3500}
+      />
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 sm:gap-6">
-          {featuredProducts.map((prod) => (
-            <ProductCard key={prod.id} product={prod} />
-          ))}
-        </div>
+      {/* ─── Banner 1 (b4.jpg) ───────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Link href="/products" className="relative block w-full bg-[#f4f2ed]">
+          <div className="relative w-full h-[220px] sm:h-[360px] md:h-[460px] lg:h-[520px]">
+            <Image
+              src="/b4.jpg"
+              alt="Luxury Edition - b4"
+              fill
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              priority
+              className="object-cover object-center"
+            />
+          </div>
+        </Link>
+      </section>
+
+      {/* ─── Product Carousel #2 (After Banner 1) ───────────────────────── */}
+      <ProductCarouselSection
+        title={`${cat2.name} Collection`}
+        subtitle="Premium unstitched & designer wear"
+        categorySlug={cat2.slug}
+        products={section2Products}
+        autoPlayInterval={4000}
+      />
+
+      {/* ─── Banner 2 (b5.jpg) ───────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Link href="/products" className="relative block w-full bg-[#f4f2ed]">
+          <div className="relative w-full h-[220px] sm:h-[360px] md:h-[460px] lg:h-[520px]">
+            <Image
+              src="/b5.jpg"
+              alt="Luxury Collection - b5"
+              fill
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              className="object-cover object-center"
+            />
+          </div>
+        </Link>
+      </section>
+
+      {/* ─── Product Carousel #3 (After Banner 2) ───────────────────────── */}
+      <ProductCarouselSection
+        title={`${cat3.name} Collection`}
+        subtitle="Exclusive signature items & luxury arrivals"
+        categorySlug={cat3.slug}
+        products={section3Products}
+        autoPlayInterval={4500}
+      />
+
+      {/* ─── Banner 3 (b6.jpg) ───────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Link href="/products" className="relative block w-full bg-[#f4f2ed]">
+          <div className="relative w-full h-[220px] sm:h-[360px] md:h-[460px] lg:h-[520px]">
+            <Image
+              src="/b6.jpg"
+              alt="Luxury Arrival - b6"
+              fill
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              className="object-cover object-center"
+            />
+          </div>
+        </Link>
       </section>
 
       {/* ─── Highlights / Features grid ──────────────────────────────────── */}
