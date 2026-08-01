@@ -132,14 +132,14 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Company links */}
+          {/* Resources & Support */}
           <div>
-            <h5 className="font-semibold text-neutral-200 text-sm mb-4">Company</h5>
+            <h5 className="font-semibold text-neutral-200 text-sm mb-4">Resources</h5>
             <ul className="space-y-2.5 text-sm">
-              <li><a href="#" className="hover:text-neutral-200 transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-neutral-200 transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-neutral-200 transition-colors">Press Kit</a></li>
-              <li><a href="#" className="hover:text-neutral-200 transition-colors">Contact Us</a></li>
+              <li><Link href="/blog" className="hover:text-[#F1A19B] transition-colors">Fashion Journal &amp; Blog</Link></li>
+              <li><Link href="/faqs" className="hover:text-[#F1A19B] transition-colors">FAQs &amp; Help Center</Link></li>
+              <li><Link href="/wishlist" className="hover:text-[#F1A19B] transition-colors">My Wishlist</Link></li>
+              <li><Link href="/account" className="hover:text-[#F1A19B] transition-colors">Account Dashboard</Link></li>
             </ul>
           </div>
 

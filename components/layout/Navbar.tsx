@@ -45,17 +45,17 @@ export function Navbar() {
       )}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-8">
-        <div className="flex h-24 items-center justify-between gap-4">
+        <div className="flex h-16 sm:h-20 items-center justify-between gap-4">
           
-          {/* LEFT: BIGGER LOGO */}
+          {/* LEFT: LOGO */}
           <Link href="/" className="flex items-center shrink-0">
             <Image
               src="/logo1.png"
               alt="Modern Traders Logo"
-              width={96}
-              height={96}
+              width={64}
+              height={64}
               priority
-              className="h-16 sm:h-20 w-auto object-contain hover:scale-105 transition-transform"
+              className="h-10 sm:h-12 w-auto object-contain hover:scale-105 transition-transform"
             />
           </Link>
 
@@ -120,7 +120,7 @@ export function Navbar() {
 
       {/* Mobile Navigation Drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-24 bg-[#FAEAD9]/95 backdrop-blur-md border-b border-[#e7dccb] shadow-xl p-6 z-40 flex flex-col gap-4 font-bold text-base uppercase">
+        <div className="md:hidden fixed inset-x-0 top-16 sm:top-20 bg-[#FAEAD9]/95 backdrop-blur-md border-b border-[#e7dccb] shadow-xl p-6 z-40 flex flex-col gap-4 font-bold text-base uppercase">
           <Link
             href="/"
             onClick={() => setIsMobileMenuOpen(false)}

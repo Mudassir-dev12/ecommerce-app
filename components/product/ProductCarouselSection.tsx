@@ -29,19 +29,43 @@ export function ProductCarouselSection({
     return [...products, ...products, ...products];
   }, [products, n]);
 
+  const [cardsPerView, setCardsPerView] = React.useState(4);
   const [currentIndex, setCurrentIndex] = React.useState(n);
   const [isTransitioning, setIsTransitioning] = React.useState(true);
   const [isHovered, setIsHovered] = React.useState(false);
 
+  // Dynamic responsive cardsPerView tracking (2 on mobile/tablet < 1024px, 4 on desktop >= 1024px)
+  React.useEffect(() => {
+    const updateCardsPerView = () => {
+      if (window.innerWidth < 1024) {
+        setCardsPerView(2);
+      } else {
+        setCardsPerView(4);
+      }
+    };
+
+    updateCardsPerView();
+    window.addEventListener('resize', updateCardsPerView);
+    return () => window.removeEventListener('resize', updateCardsPerView);
+  }, []);
+
+  // Update currentIndex when products count changes
+  React.useEffect(() => {
+    setCurrentIndex(n);
+  }, [n]);
+
   if (!products || n === 0) return null;
 
-  // Slide Left to Right (decrements index)
+  // Dynamic step percentage per item: 50% on mobile (<1024px), 25% on desktop (>=1024px)
+  const stepPercentage = 100 / cardsPerView;
+
+  // Slide Left to Right (decrements index by 1 whole card)
   const handlePrev = () => {
     setIsTransitioning(true);
     setCurrentIndex((prev) => prev - 1);
   };
 
-  // Slide Right to Left (increments index)
+  // Slide Right to Left (increments index by 1 whole card)
   const handleNext = () => {
     setIsTransitioning(true);
     setCurrentIndex((prev) => prev + 1);
@@ -58,7 +82,37 @@ export function ProductCarouselSection({
     }
   };
 
-  // Auto-slide Right-to-Left with reduced delay (2.8s)
+  // Touch Swipe Gesture Handlers for Mobile Devices
+  const touchStartX = React.useRef<number | null>(null);
+  const touchEndX = React.useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsHovered(true);
+    touchStartX.current = e.targetTouches[0].clientX;
+    touchEndX.current = null;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    setIsHovered(false);
+    if (!touchStartX.current || !touchEndX.current) return;
+    const distance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 40; // minimum swipe distance in pixels
+
+    if (distance > minSwipeDistance) {
+      handleNext();
+    } else if (distance < -minSwipeDistance) {
+      handlePrev();
+    }
+
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
+  // Auto-slide Right-to-Left with interval
   React.useEffect(() => {
     if (isHovered || n === 0) return;
     const timer = setInterval(() => {
@@ -69,9 +123,12 @@ export function ProductCarouselSection({
 
   return (
     <section
-      className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6 overflow-hidden"
+      className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6 overflow-hidden select-none"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Category Heading */}
       <div className="flex justify-between items-center border-b border-[#e7dccb]/80 pb-4">
@@ -121,7 +178,7 @@ export function ProductCarouselSection({
             onTransitionEnd={handleTransitionEnd}
             className="flex flex-nowrap transition-transform duration-500 ease-in-out"
             style={{
-              transform: `translate3d(-${currentIndex * 25}%, 0, 0)`,
+              transform: `translate3d(-${currentIndex * stepPercentage}%, 0, 0)`,
               transitionProperty: isTransitioning ? 'transform' : 'none',
             }}
           >
