@@ -80,7 +80,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
 
   if (layout === 'list') {
     return (
-      <div className="group relative flex flex-col sm:flex-row gap-6 rounded-2xl border border-neutral-100 bg-white p-5 shadow-card hover:shadow-card-hover transition-card">
+      <div className="group relative flex flex-col sm:flex-row gap-6 rounded-2xl border border-neutral-100 bg-white p-5 shadow-card hover:shadow-card-hover transition-card hover-lift animate-fade-in-up">
         
         {/* Wishlist toggle absolute */}
         <button
@@ -189,18 +189,18 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
 
   // Grid layout (default)
   return (
-    <div className="group relative flex flex-col justify-between rounded-2xl border border-neutral-100 bg-white p-4 shadow-card hover:shadow-card-hover transition-card">
-      <div>
-        {/* Wishlist toggle */}
+    <div className="group relative flex flex-col justify-between h-full rounded-2xl border border-neutral-100 bg-white p-3.5 sm:p-4 shadow-card hover:shadow-card-hover transition-card hover-lift animate-fade-in-up">
+      <div className="flex flex-col flex-1">
+        {/* Wishlist toggle (Icon only, no bg circle) */}
         <button
           onClick={handleWishlistClick}
           className={cn(
-            'absolute right-6 top-6 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-sm transition-all hover:scale-105 active:scale-95',
-            isWishlisted ? 'text-rose-500' : 'text-neutral-400 hover:text-neutral-600'
+            'absolute right-4 top-4 z-20 p-1.5 transition-transform hover:scale-125 active:scale-95 drop-shadow-md focus:outline-none',
+            isWishlisted ? 'text-rose-500' : 'text-neutral-600 hover:text-rose-500'
           )}
           aria-label="Wishlist toggle"
         >
-          <Heart className="h-5 w-5" fill={isWishlisted ? 'currentColor' : 'none'} />
+          <Heart className="h-5.5 w-5.5 sm:h-6 sm:w-6" fill={isWishlisted ? 'currentColor' : 'none'} />
         </button>
 
         {/* Thumbnail Box */}
@@ -220,72 +220,80 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
             )}
           />
           {!isAvailable ? (
-            <span className="absolute left-3 top-3 z-10 rounded-md bg-rose-600 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white shadow-md">
+            <span className="absolute left-2.5 top-2.5 z-10 rounded-md bg-rose-600 px-2.5 py-1 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-white shadow-md">
               SOLD OUT
             </span>
           ) : product.discount && product.discount > 0 ? (
-            <Badge variant="danger" className="absolute left-3 top-3">
+            <Badge variant="danger" className="absolute left-2.5 top-2.5 text-[10px] sm:text-xs">
               -{product.discount}%
             </Badge>
           ) : product.isNew ? (
-            <Badge variant="primary" className="absolute left-3 top-3">
+            <Badge variant="primary" className="absolute left-2.5 top-2.5 text-[10px] sm:text-xs">
               New
             </Badge>
           ) : null}
         </Link>
 
-        {/* Product Meta */}
-        <div className="mt-4 space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{product.brand}</span>
+        {/* Product Meta (Increased Text Sizes) */}
+        <div className="mt-3.5 space-y-1.5 flex-1 flex flex-col justify-start">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 block truncate">
+            {product.brand}
+          </span>
           <Link href={`/products/${product.slug}`} className="block">
-            <h3 className="text-base font-bold text-neutral-900 group-hover:text-primary-600 transition-colors line-clamp-1">
+            <h3
+              className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-primary-600 transition-colors truncate max-w-full"
+              title={product.name}
+            >
               {product.name}
             </h3>
           </Link>
           <div className="flex items-center pt-0.5">
             <Rating rating={product.rating} size="sm" />
-            <span className="text-xs text-neutral-400 ml-1">({product.reviewCount})</span>
+            <span className="text-xs text-neutral-400 ml-1.5 font-semibold">({product.reviewCount})</span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-2 mt-4">
-        {/* Prices */}
-        <div className="flex flex-col">
-          <span className="text-base font-extrabold text-neutral-900">{formatPrice(product.price)}</span>
+      {/* Footer: Price & CTA buttons cleanly aligned at bottom */}
+      <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-neutral-100/80 shrink-0">
+        {/* Prices (Single Line Guaranteed with Larger Font) */}
+        <div className="flex flex-col min-w-0 shrink">
+          <span className="text-sm sm:text-base font-black text-neutral-900 whitespace-nowrap tracking-tight">
+            {formatPrice(product.price)}
+          </span>
           {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-xs text-neutral-400 line-through">{formatPrice(product.originalPrice)}</span>
+            <span className="text-xs sm:text-sm text-neutral-400 line-through whitespace-nowrap">
+              {formatPrice(product.originalPrice)}
+            </span>
           )}
         </div>
 
-        {/* CTAs */}
-        {!isAvailable ? (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled
-            className="h-9 px-3.5 text-xs font-bold text-rose-600 bg-rose-50 border-rose-200 cursor-not-allowed opacity-80"
-          >
-            Sold Out
-          </Button>
-        ) : hasVariants ? (
-          <Link href={`/products/${product.slug}`}>
-            <Button variant="outline" size="sm" className="h-9 px-3.5 text-xs font-semibold">
-              Options
-            </Button>
-          </Link>
-        ) : (
-          <Button
-            onClick={handleAddToCartClick}
-            variant="primary"
-            size="sm"
-            disabled={!isAvailable}
-            className="h-9 px-3.5 text-xs font-semibold gap-1"
-          >
-            <ShoppingBag className="h-3.5 w-3.5" />
-            <span>Add</span>
-          </Button>
-        )}
+        {/* CTAs (Matching Screenshot Pill Buttons) */}
+        <div className="shrink-0">
+          {!isAvailable ? (
+            <button
+              disabled
+              className="h-8 sm:h-8.5 px-3.5 text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 cursor-not-allowed opacity-80 rounded-full"
+            >
+              Sold Out
+            </button>
+          ) : hasVariants ? (
+            <Link href={`/products/${product.slug}`}>
+              <button className="h-8 sm:h-8.5 px-3.5 text-xs font-extrabold rounded-full border border-[#B57A20]/60 text-[#B57A20] hover:bg-[#FAF6F0] transition-all">
+                Options
+              </button>
+            </Link>
+          ) : (
+            <button
+              onClick={handleAddToCartClick}
+              disabled={!isAvailable}
+              className="h-8 sm:h-8.5 px-3.5 text-xs font-extrabold gap-1.5 rounded-full bg-[#B57A20] hover:bg-[#8e5c12] text-white shadow-sm inline-flex items-center justify-center transition-all transform active:scale-95"
+            >
+              <ShoppingBag className="h-3.5 w-3.5 text-white" />
+              <span>Add</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -338,10 +338,96 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 
 export async function getReviewsByProductId(productId: string): Promise<Review[]> {
   try {
-    const { data, error } = await supabase.from('reviews').select('*').eq('product_id', productId);
-    if (!error && data && data.length > 0) return data.map(mapReview);
-  } catch (e) {}
-  return mockReviews.filter((r) => r.productId === productId);
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('*')
+      .eq('product_id', productId)
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      return data.map(mapReview);
+    }
+  } catch (e) {
+    console.warn('Error fetching reviews for product from Supabase:', e);
+  }
+  return [];
+}
+
+export async function getAllReviews(): Promise<Review[]> {
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      return data.map(mapReview);
+    }
+  } catch (e) {
+    console.warn('Error fetching all reviews from Supabase:', e);
+  }
+  return [];
+}
+
+export async function createReview(reviewData: {
+  productId: string;
+  author: string;
+  rating: number;
+  title: string;
+  body: string;
+}): Promise<Review> {
+  const newReview: Review = {
+    id: `rev-${Date.now()}`,
+    productId: reviewData.productId,
+    author: reviewData.author || 'Verified Buyer',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&q=80',
+    rating: Number(reviewData.rating),
+    title: reviewData.title,
+    body: reviewData.body,
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    verified: true,
+    helpful: 0,
+  };
+
+  try {
+    const payload = {
+      id: newReview.id,
+      product_id: newReview.productId,
+      author: newReview.author,
+      avatar: newReview.avatar,
+      rating: newReview.rating,
+      title: newReview.title,
+      body: newReview.body,
+      date: newReview.date,
+      verified: true,
+      helpful: 0,
+    };
+
+    const { error } = await supabase.from('reviews').upsert([payload], { onConflict: 'id' });
+    if (error) {
+      console.warn('Supabase review insert notice:', error.message);
+    }
+
+    // Recalculate and update product rating in products table
+    const productReviews = await getReviewsByProductId(newReview.productId);
+    const allReviews = [newReview, ...productReviews.filter(r => r.id !== newReview.id)];
+    const avgRating = Number((allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length).toFixed(1));
+    
+    await updateProduct(newReview.productId, {
+      rating: avgRating,
+      reviewCount: allReviews.length,
+    }).catch(() => {});
+
+  } catch (e) {
+    console.warn('Error saving review to Supabase:', e);
+  }
+
+  // Dispatch custom window event for real-time UI updates
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('review-submitted'));
+  }
+
+  return newReview;
 }
 
 // ─── Orders & User ────────────────────────────────────────────────────────

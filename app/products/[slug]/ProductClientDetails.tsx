@@ -251,42 +251,29 @@ export function ProductClientDetails({ product }: ProductClientDetailsProps) {
         </div>
       </div>
 
-      {/* ─── Call to Actions ─── */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-neutral-100">
-        
-        {/* Wishlist toggle icon */}
-        <Button
-          onClick={handleWishlistToggle}
-          variant="outline"
-          className={cn('sm:h-12 w-full sm:w-12 p-0 shrink-0 rounded-xl', {
-            'text-rose-500 hover:text-rose-600 border-rose-200 bg-rose-50/20': isInWishlist,
-          })}
-          aria-label="Wishlist toggle"
-        >
-          <Heart className="h-5 w-5" fill={isInWishlist ? 'currentColor' : 'none'} />
-        </Button>
-
-        {/* Add to Cart */}
-        <Button
+      {/* ─── Call to Actions (Add to Cart & Buy Now - Larger Height & Text Stack) ─── */}
+      <div className="flex flex-col gap-3.5 pt-4 border-t border-neutral-100">
+        {/* Add to Cart Button (Top Pill) */}
+        <button
+          type="button"
           onClick={handleAddToCart}
-          variant="outline"
           disabled={!isAvailable}
-          className="flex-1 sm:h-12 gap-2 text-sm font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-14 sm:h-15 rounded-full border-2 border-[#B57A20]/50 bg-[#FAF6F0] hover:bg-[#F3E7D5] text-[#B57A20] font-extrabold text-base sm:text-lg flex items-center justify-center gap-3 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <ShoppingBag className="h-4.5 w-4.5" />
+          <ShoppingBag className="h-5 w-5 text-[#B57A20]" />
           <span>{isAvailable ? 'Add to Cart' : 'Out of Stock'}</span>
-        </Button>
+        </button>
 
-        {/* Buy Now */}
-        <Button
+        {/* Buy It Now Button (Bottom Pill) */}
+        <button
+          type="button"
           onClick={handleBuyNow}
-          variant="primary"
           disabled={!isAvailable}
-          className="flex-1 sm:h-12 gap-2 text-sm font-bold rounded-xl shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-14 sm:h-15 rounded-full bg-[#B57A20] hover:bg-[#8e5c12] text-white font-extrabold text-base sm:text-lg flex items-center justify-center gap-3 transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border-none"
         >
-          <CreditCard className="h-4.5 w-4.5" />
+          <CreditCard className="h-5 w-5 text-white" />
           <span>{isAvailable ? 'Buy It Now' : 'Sold Out'}</span>
-        </Button>
+        </button>
       </div>
 
     </div>

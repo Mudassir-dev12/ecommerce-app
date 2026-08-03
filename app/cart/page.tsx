@@ -9,10 +9,21 @@ import { CartItem } from '@/components/cart/CartItem';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
 
+import { Skeleton } from '@/components/ui/Skeleton';
+
 export default function CartPage() {
   const { toast } = useToast();
   const cart = useStore((state) => state.cart);
   const clearCart = useStore((state) => state.clearCart);
+
+  const [showSkeleton, setShowSkeleton] = React.useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSkeleton(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Calculations
   const subtotal = React.useMemo(() => {
@@ -22,6 +33,29 @@ export default function CartPage() {
   const shipping = subtotal > 0 ? 300 : 0; // Fixed COD Delivery Charge ($300)
   const tax = subtotal * 0.09; // flat 9% simulated tax rate
   const total = Math.max(subtotal + shipping + tax, 0);
+
+  if (showSkeleton) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-8 animate-fade-in">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48 rounded-xl" />
+          <Skeleton className="h-4 w-64 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-4 rounded-2xl border border-neutral-150 bg-white p-6">
+            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full rounded-xl" />
+          </div>
+          <div className="lg:col-span-1 rounded-2xl border border-neutral-150 bg-white p-6 space-y-4">
+            <Skeleton className="h-6 w-32 rounded-lg" />
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (cart.length === 0) {
     return (

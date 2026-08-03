@@ -68,11 +68,8 @@ export function Navbar() {
               <Link href="/products" className="text-[#131213] hover:text-[#B57A20] transition-colors">
                 Shop
               </Link>
-              <Link href="/blog" className="text-[#131213] hover:text-[#B57A20] transition-colors">
-                Blog
-              </Link>
-              <Link href="/faqs" className="text-[#131213] hover:text-[#B57A20] transition-colors">
-                FAQs
+              <Link href="/reviews" className="text-[#131213] hover:text-[#B57A20] transition-colors">
+                Reviews
               </Link>
             </nav>
 
@@ -145,18 +142,11 @@ export function Navbar() {
             Shop
           </Link>
           <Link
-            href="/blog"
+            href="/reviews"
             onClick={() => setIsMobileMenuOpen(false)}
             className="py-2 text-[#131213] hover:text-[#B57A20] border-b border-[#e7dccb]/50"
           >
-            Blog
-          </Link>
-          <Link
-            href="/faqs"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="py-2 text-[#131213] hover:text-[#B57A20] border-b border-[#e7dccb]/50"
-          >
-            FAQs
+            Reviews
           </Link>
           <Link
             href="/account"

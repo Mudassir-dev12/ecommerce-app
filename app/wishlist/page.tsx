@@ -7,6 +7,7 @@ import { useStore } from '@/lib/store';
 import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { ProductCard } from '@/components/product/ProductCard';
+import { Skeleton, ProductGridSkeleton } from '@/components/ui/Skeleton';
 
 export default function WishlistPage() {
   const { toast } = useToast();
@@ -14,12 +15,33 @@ export default function WishlistPage() {
   const removeFromWishlist = useStore((state) => state.removeFromWishlist);
   const addToCart = useStore((state) => state.addToCart);
 
+  const [showSkeleton, setShowSkeleton] = React.useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSkeleton(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleClearAll = () => {
     wishlist.forEach((item) => {
       removeFromWishlist(item.productId);
     });
     toast('Your wishlist has been cleared.', 'info');
   };
+
+  if (showSkeleton) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-8 animate-fade-in">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48 rounded-xl" />
+          <Skeleton className="h-4 w-64 rounded-lg" />
+        </div>
+        <ProductGridSkeleton count={4} />
+      </div>
+    );
+  }
 
   if (wishlist.length === 0) {
     return (

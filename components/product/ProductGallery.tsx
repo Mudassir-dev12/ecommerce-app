@@ -2,18 +2,48 @@
 
 import * as React from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { ProductImage } from '@/types';
+import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import type { Product, ProductImage } from '@/types';
 import { cn } from '@/lib/utils';
+import { useStore } from '@/lib/store';
+import { useToast } from '@/components/ui/Toast';
 
 export interface ProductGalleryProps {
   images: ProductImage[];
+  product?: Product;
 }
 
-export function ProductGallery({ images }: ProductGalleryProps) {
+export function ProductGallery({ images, product }: ProductGalleryProps) {
+  const { toast } = useToast();
+  const toggleWishlist = useStore((state) => state.toggleWishlist);
+  const isInWishlist = useStore((state) => state.isInWishlist(product?.id || ''));
+
   const [activeIndex, setActiveIndex] = React.useState(0);
   const [isZoomed, setIsZoomed] = React.useState(false);
   const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!product) return;
+    toggleWishlist({
+      productId: product.id,
+      slug: product.slug,
+      name: product.name,
+      brand: product.brand,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.images[0]?.url || '',
+      rating: product.rating,
+      inStock: product.inStock,
+    });
+    toast(
+      isInWishlist
+        ? `Removed "${product.name}" from wishlist.`
+        : `Added "${product.name}" to wishlist.`,
+      'info'
+    );
+  };
 
   if (!images || images.length === 0) {
     return (
@@ -46,6 +76,21 @@ export function ProductGallery({ images }: ProductGalleryProps) {
       {/* Main Image Viewport */}
       <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 border border-neutral-100">
         
+        {/* Floating Wishlist Heart Icon (No bg circle) */}
+        {product && (
+          <button
+            onClick={handleWishlistToggle}
+            className={cn(
+              'absolute right-5 top-5 z-20 p-2 transition-transform hover:scale-125 active:scale-95 drop-shadow-lg focus:outline-none',
+              isInWishlist ? 'text-rose-500' : 'text-neutral-700 hover:text-rose-500'
+            )}
+            title={isInWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
+            aria-label="Wishlist toggle"
+          >
+            <Heart className="h-7 w-7 sm:h-8 sm:w-8" fill={isInWishlist ? 'currentColor' : 'none'} />
+          </button>
+        )}
+
         {/* Zoomable Image frame */}
         <div
           className="relative h-full w-full cursor-zoom-in overflow-hidden"

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import type { Product } from '@/types';
 import { ProductCard } from './ProductCard';
+import { ProductCardSkeleton } from '../ui/Skeleton';
 
 interface ProductCarouselSectionProps {
   title: string;
@@ -12,6 +13,7 @@ interface ProductCarouselSectionProps {
   categorySlug?: string;
   products: Product[];
   autoPlayInterval?: number;
+  isLoading?: boolean;
 }
 
 export function ProductCarouselSection({
@@ -20,59 +22,35 @@ export function ProductCarouselSection({
   categorySlug,
   products,
   autoPlayInterval = 2800,
+  isLoading = false,
 }: ProductCarouselSectionProps) {
   const n = products?.length || 0;
-
-  // Tripled items array for seamless infinite sliding
-  const displayItems = React.useMemo(() => {
-    if (!products || n === 0) return [];
-    return [...products, ...products, ...products];
-  }, [products, n]);
-
+  const [showSkeleton, setShowSkeleton] = React.useState(true);
   const [cardsPerView, setCardsPerView] = React.useState(4);
   const [currentIndex, setCurrentIndex] = React.useState(n);
   const [isTransitioning, setIsTransitioning] = React.useState(true);
   const [isHovered, setIsHovered] = React.useState(false);
 
-  // Dynamic responsive cardsPerView tracking (2 on mobile/tablet < 1024px, 4 on desktop >= 1024px)
-  React.useEffect(() => {
-    const updateCardsPerView = () => {
-      if (window.innerWidth < 1024) {
-        setCardsPerView(2);
-      } else {
-        setCardsPerView(4);
-      }
-    };
+  const touchStartX = React.useRef<number | null>(null);
+  const touchEndX = React.useRef<number | null>(null);
 
-    updateCardsPerView();
-    window.addEventListener('resize', updateCardsPerView);
-    return () => window.removeEventListener('resize', updateCardsPerView);
-  }, []);
+  const displayItems = React.useMemo(() => {
+    if (!products || n === 0) return [];
+    return [...products, ...products, ...products];
+  }, [products, n]);
 
-  // Update currentIndex when products count changes
-  React.useEffect(() => {
-    setCurrentIndex(n);
-  }, [n]);
-
-  if (!products || n === 0) return null;
-
-  // Dynamic step percentage per item: 50% on mobile (<1024px), 25% on desktop (>=1024px)
-  const stepPercentage = 100 / cardsPerView;
-
-  // Slide Left to Right (decrements index by 1 whole card)
-  const handlePrev = () => {
+  // Carousel Handlers
+  const handlePrev = React.useCallback(() => {
     setIsTransitioning(true);
     setCurrentIndex((prev) => prev - 1);
-  };
+  }, []);
 
-  // Slide Right to Left (increments index by 1 whole card)
-  const handleNext = () => {
+  const handleNext = React.useCallback(() => {
     setIsTransitioning(true);
     setCurrentIndex((prev) => prev + 1);
-  };
+  }, []);
 
-  // Handle seamless infinite loop jump on transition end
-  const handleTransitionEnd = () => {
+  const handleTransitionEnd = React.useCallback(() => {
     if (currentIndex <= 0) {
       setIsTransitioning(false);
       setCurrentIndex(currentIndex + n);
@@ -80,11 +58,7 @@ export function ProductCarouselSection({
       setIsTransitioning(false);
       setCurrentIndex(currentIndex - n);
     }
-  };
-
-  // Touch Swipe Gesture Handlers for Mobile Devices
-  const touchStartX = React.useRef<number | null>(null);
-  const touchEndX = React.useRef<number | null>(null);
+  }, [currentIndex, n]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsHovered(true);
@@ -100,7 +74,7 @@ export function ProductCarouselSection({
     setIsHovered(false);
     if (!touchStartX.current || !touchEndX.current) return;
     const distance = touchStartX.current - touchEndX.current;
-    const minSwipeDistance = 40; // minimum swipe distance in pixels
+    const minSwipeDistance = 40;
 
     if (distance > minSwipeDistance) {
       handleNext();
@@ -112,6 +86,34 @@ export function ProductCarouselSection({
     touchEndX.current = null;
   };
 
+  // 0.5s Skeleton Timer
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSkeleton(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Responsive cardsPerView tracking
+  React.useEffect(() => {
+    const updateCardsPerView = () => {
+      if (window.innerWidth < 1024) {
+        setCardsPerView(2);
+      } else {
+        setCardsPerView(4);
+      }
+    };
+
+    updateCardsPerView();
+    window.addEventListener('resize', updateCardsPerView);
+    return () => window.removeEventListener('resize', updateCardsPerView);
+  }, []);
+
+  // Reset index when products count changes
+  React.useEffect(() => {
+    setCurrentIndex(n);
+  }, [n]);
+
   // Auto-slide Right-to-Left with interval
   React.useEffect(() => {
     if (isHovered || n === 0) return;
@@ -119,7 +121,29 @@ export function ProductCarouselSection({
       handleNext();
     }, autoPlayInterval);
     return () => clearInterval(timer);
-  }, [isHovered, n, autoPlayInterval]);
+  }, [isHovered, n, autoPlayInterval, handleNext]);
+
+  if (isLoading || showSkeleton || !products || n === 0) {
+    return (
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6 select-none">
+        <div className="flex justify-between items-center border-b border-[#e7dccb]/80 pb-4">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#131213] uppercase tracking-wider">
+              {title}
+            </h2>
+            {subtitle && <p className="text-xs text-neutral-500 mt-0.5">{subtitle}</p>}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <ProductCardSkeleton key={`carousel-skel-${i}`} />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  const stepPercentage = 100 / cardsPerView;
 
   return (
     <section
@@ -185,7 +209,7 @@ export function ProductCarouselSection({
             {displayItems.map((prod, idx) => (
               <div
                 key={`${prod.id}-${idx}`}
-                className="w-1/2 sm:w-1/2 lg:w-1/4 shrink-0 px-2 sm:px-3"
+                className="w-1/2 sm:w-1/2 lg:w-1/4 shrink-0 px-2 sm:px-3 flex flex-col items-stretch"
               >
                 <ProductCard product={prod} />
               </div>

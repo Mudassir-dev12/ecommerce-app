@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { SlidersHorizontal, Grid, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getProducts, getCategories } from '@/lib/api';
 import { ProductFilters } from '@/components/product/ProductFilters';
-import { ProductGrid } from '@/components/product/ProductGrid';
+import { ProductGridWrapper } from '@/components/product/ProductGridWrapper';
 import { ProductSort } from '@/components/product/ProductSort';
 import type { ProductFilters as FiltersType, SortOption } from '@/types';
 import { Button } from '@/components/ui/Button';
@@ -155,7 +155,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </div>
 
           {/* Product Cards Block */}
-          <ProductGrid products={products} layout={layout} skeletonCount={8} />
+          <ProductGridWrapper products={products} layout={layout} />
 
           {/* Pagination Controls */}
           {pagination.totalPages > 1 && (

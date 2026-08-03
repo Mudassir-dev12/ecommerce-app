@@ -16,6 +16,7 @@ import {
   uploadProductImage,
 } from '@/lib/api';
 import type { Product, Category, Order, OrderStatus } from '@/types';
+import { AdminSkeleton } from '@/components/ui/Skeleton';
 import {
   Plus,
   Pencil,
@@ -153,7 +154,7 @@ export default function AdminDashboardPage() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
-    } catch (e) {}
+    } catch (e) { }
     if (typeof window !== 'undefined') {
       localStorage.removeItem('mt_admin_authenticated');
     }
@@ -622,16 +623,23 @@ export default function AdminDashboardPage() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAF6F0] p-4 sm:p-8">
+        <AdminSkeleton />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FAF6F0] text-[#131213] font-sans p-4 sm:p-8">
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-2xl backdrop-blur-md border flex items-center gap-3 animate-slide-in ${
-            toast.type === 'error'
+          className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-2xl backdrop-blur-md border flex items-center gap-3 animate-slide-in ${toast.type === 'error'
               ? 'bg-rose-50 border-rose-200 text-rose-800'
               : 'bg-emerald-50 border-emerald-200 text-emerald-800'
-          }`}
+            }`}
         >
           {toast.type === 'error' ? (
             <XCircle className="w-5 h-5 text-rose-600" />
@@ -643,7 +651,7 @@ export default function AdminDashboardPage() {
       )}
 
       <div className="max-w-7xl mx-auto space-y-8">
-        
+
         {/* Header Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#e7dccb] pb-6">
           <div>
@@ -654,10 +662,6 @@ export default function AdminDashboardPage() {
               >
                 <ArrowLeft className="w-3.5 h-3.5" /> Back to Shop
               </Link>
-              <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold px-2.5 py-1 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live Database Backend
-              </span>
             </div>
             <div className="flex items-center gap-3 mt-3">
               <img
@@ -667,26 +671,13 @@ export default function AdminDashboardPage() {
               />
               <div>
                 <h1 className="text-2xl font-extrabold tracking-tight text-[#131213] leading-none uppercase">
-                  Modern Traders • Admin Console
+                  Modern Traders
                 </h1>
-                <p className="text-neutral-500 text-xs mt-1">
-                  Manage products, view customer purchases, and track order fulfillment status in real time.
-                </p>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={fetchAdminData}
-              disabled={loading}
-              className="inline-flex items-center gap-2 bg-white hover:bg-neutral-50 border border-[#e7dccb] text-[#131213] font-bold px-4 py-2.5 rounded-xl transition-all text-sm shadow-sm"
-              title="Refresh console data"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-
             {activeTab === 'products' && (
               <button
                 onClick={handleOpenAddModal}
@@ -711,11 +702,10 @@ export default function AdminDashboardPage() {
         <div className="flex items-center gap-2 bg-white border border-[#e7dccb] p-1.5 rounded-2xl w-fit shadow-sm">
           <button
             onClick={() => setActiveTab('products')}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
-              activeTab === 'products'
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'products'
                 ? 'bg-[#B57A20] text-white shadow-md'
                 : 'text-neutral-600 hover:text-[#131213] hover:bg-[#FAF6F0]'
-            }`}
+              }`}
           >
             <Package className="w-4 h-4" />
             <span>Products Catalog</span>
@@ -726,11 +716,10 @@ export default function AdminDashboardPage() {
 
           <button
             onClick={() => setActiveTab('orders')}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all relative ${
-              activeTab === 'orders'
+            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all relative ${activeTab === 'orders'
                 ? 'bg-[#B57A20] text-white shadow-md'
                 : 'text-neutral-600 hover:text-[#131213] hover:bg-[#FAF6F0]'
-            }`}
+              }`}
           >
             <ShoppingBag className="w-4 h-4" />
             <span>Customer Orders</span>
@@ -748,7 +737,7 @@ export default function AdminDashboardPage() {
         {/* ───────────────────────────────────────────────────────────── */}
         {activeTab === 'products' && (
           <div className="space-y-6 animate-fade-in">
-            
+
             {/* Products Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-white border border-[#e7dccb] rounded-2xl p-5 shadow-sm">
@@ -884,15 +873,15 @@ export default function AdminDashboardPage() {
                             )}
                           </td>
 
-                          <td className="py-3.5 px-4">
+                          <td className="py-3.5 px-4 whitespace-nowrap">
                             {product.inStock && product.stockCount > 0 ? (
-                              <span className="inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full font-bold">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              <span className="inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-[2px] font-bold whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-[2px] bg-emerald-500 shrink-0" />
                                 {product.stockCount} in stock
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-full font-bold">
-                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                              <span className="inline-flex items-center gap-1.5 text-xs text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-[2px] font-bold whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-[2px] bg-rose-500 shrink-0" />
                                 Out of stock (0)
                               </span>
                             )}
@@ -960,7 +949,7 @@ export default function AdminDashboardPage() {
         {/* ───────────────────────────────────────────────────────────── */}
         {activeTab === 'orders' && (
           <div className="space-y-6 animate-fade-in">
-            
+
             {/* Orders Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-white border border-[#e7dccb] rounded-2xl p-5 shadow-sm">
@@ -1065,7 +1054,7 @@ export default function AdminDashboardPage() {
 
                         return (
                           <tr key={ord.id} className="hover:bg-[#FAF6F0]/60 transition-colors group">
-                            
+
                             {/* Order # & Date */}
                             <td className="py-3.5 px-4">
                               <div className="space-y-0.5">
@@ -1550,7 +1539,7 @@ export default function AdminDashboardPage() {
       {selectedOrderDetails && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white border border-[#e7dccb] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative text-[#131213] space-y-6">
-            
+
             <div className="flex items-center justify-between border-b border-[#e7dccb] pb-4">
               <div>
                 <div className="flex items-center gap-2">

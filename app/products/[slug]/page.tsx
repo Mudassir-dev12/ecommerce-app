@@ -8,6 +8,7 @@ import { RelatedProducts } from '@/components/product/RelatedProducts';
 import { Rating } from '@/components/ui/Rating';
 import { Badge } from '@/components/ui/Badge';
 import { ProductClientDetails } from './ProductClientDetails';
+import { ProductReviewsClient } from '@/components/product/ProductReviewsClient';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -55,7 +56,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         
         {/* Left Side: Images Gallery */}
         <div>
-          <ProductGallery images={product.images} />
+          <ProductGallery images={product.images} product={product} />
         </div>
 
         {/* Right Side: Options and Cart Actions (Client Component) */}
@@ -79,23 +80,6 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           </div>
 
           <ProductClientDetails product={product} />
-
-          {/* Guarantee / Perks items */}
-          <div className="border-t border-neutral-100 pt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-medium text-neutral-500">
-            <div className="flex items-center gap-2">
-              <Truck className="h-4.5 w-4.5 text-neutral-400 shrink-0" />
-              <span>Free delivery over $150</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <RotateCcw className="h-4.5 w-4.5 text-neutral-400 shrink-0" />
-              <span>30-day hassle-free returns</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4.5 w-4.5 text-neutral-400 shrink-0" />
-              <span>100% Quality guarantee</span>
-            </div>
-          </div>
-
         </div>
 
       </div>
@@ -131,65 +115,13 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         </div>
       </section>
 
-      {/* ─── Customer Reviews Section ─── */}
-      <section className="border-t border-neutral-150 pt-12 space-y-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h3 className="text-xl font-bold text-neutral-900 tracking-tight">Customer Reviews</h3>
-            <p className="text-xs text-neutral-500 mt-1">Honest feedback from verified purchasers</p>
-          </div>
-          <div className="flex items-center gap-4 rounded-xl border p-4 bg-white shadow-sm shrink-0">
-            <div className="text-center pr-4 border-r border-neutral-100">
-              <span className="text-2xl font-extrabold text-neutral-900">{product.rating.toFixed(1)}</span>
-              <p className="text-[10px] font-bold text-neutral-400 uppercase mt-0.5">Rating</p>
-            </div>
-            <div>
-              <Rating rating={product.rating} />
-              <p className="text-xs text-neutral-500 mt-1">Based on {product.reviewCount} total reviews</p>
-            </div>
-          </div>
-        </div>
-
-        {reviews.length === 0 ? (
-          <div className="flex items-center gap-2 text-sm text-neutral-500 py-6 border-y border-neutral-100">
-            <AlertCircle className="h-5 w-5" />
-            <span>No detailed reviews posted for this product yet. Be the first to write one!</span>
-          </div>
-        ) : (
-          <div className="divide-y divide-neutral-150 border-t border-neutral-100">
-            {reviews.map((rev) => (
-              <div key={rev.id} className="py-6 flex flex-col sm:flex-row gap-6 items-start">
-                {/* Author Info */}
-                <div className="flex items-center sm:flex-col sm:items-start gap-3 w-full sm:w-44 shrink-0">
-                  <div className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-full overflow-hidden border bg-neutral-100">
-                    <img src={rev.avatar} alt={rev.author} className="object-cover" />
-                  </div>
-                  <div>
-                    <h5 className="text-sm font-bold text-neutral-900 truncate w-32">{rev.author}</h5>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      {rev.verified && (
-                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-700 tracking-wide">
-                          Verified
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Review Text */}
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center justify-between gap-4">
-                    <Rating rating={rev.rating} size="sm" />
-                    <span className="text-xs text-neutral-400">{rev.date}</span>
-                  </div>
-                  <h4 className="text-base font-bold text-neutral-900">{rev.title}</h4>
-                  <p className="text-sm text-neutral-600 leading-relaxed">{rev.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      {/* ─── Customer Reviews Section (Dynamic Supabase Backend) ─── */}
+      <ProductReviewsClient
+        productId={product.id}
+        initialReviews={reviews}
+        initialRating={product.rating}
+        initialReviewCount={product.reviewCount}
+      />
 
       {/* ─── Related Products ─── */}
       <RelatedProducts product={product} />

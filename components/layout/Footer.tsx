@@ -136,8 +136,7 @@ export function Footer() {
           <div>
             <h5 className="font-semibold text-neutral-200 text-sm mb-4">Resources</h5>
             <ul className="space-y-2.5 text-sm">
-              <li><Link href="/blog" className="hover:text-[#F1A19B] transition-colors">Fashion Journal &amp; Blog</Link></li>
-              <li><Link href="/faqs" className="hover:text-[#F1A19B] transition-colors">FAQs &amp; Help Center</Link></li>
+              <li><Link href="/reviews" className="hover:text-[#F1A19B] transition-colors">Customer Reviews &amp; Ratings</Link></li>
               <li><Link href="/wishlist" className="hover:text-[#F1A19B] transition-colors">My Wishlist</Link></li>
               <li><Link href="/account" className="hover:text-[#F1A19B] transition-colors">Account Dashboard</Link></li>
             </ul>
