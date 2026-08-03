@@ -136,10 +136,12 @@ export interface Address {
   country: string;
   phone: string;
   isDefault?: boolean;
+  guestUserId?: string;
 }
 
 export interface Order {
   id: string;
+  userId?: string;
   orderNumber: string;
   status: OrderStatus;
   items: OrderItem[];

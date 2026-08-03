@@ -12,7 +12,7 @@ import { PaymentForm } from '@/components/checkout/PaymentForm';
 import { OrderReview } from '@/components/checkout/OrderReview';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
-import { createOrder } from '@/lib/api';
+import { createOrder, getCurrentUser, updateCurrentUser } from '@/lib/api';
 import type { ShippingFormData, PaymentFormData, OrderItem } from '@/types';
 
 export default function CheckoutPage() {
@@ -75,6 +75,34 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     setIsSubmitting(true);
 
+    const currentUser = await getCurrentUser();
+
+    if (shippingData) {
+      try {
+        await updateCurrentUser({
+          firstName: shippingData.firstName || currentUser.firstName,
+          lastName: shippingData.lastName || currentUser.lastName,
+          phone: shippingData.phone || currentUser.phone,
+          addresses: [
+            {
+              id: `addr-${Date.now()}`,
+              label: 'Shipping Address',
+              firstName: shippingData.firstName,
+              lastName: shippingData.lastName,
+              line1: shippingData.line1,
+              line2: shippingData.line2,
+              city: shippingData.city,
+              state: shippingData.state,
+              zip: shippingData.zip,
+              country: shippingData.country,
+              phone: shippingData.phone,
+              isDefault: true,
+            },
+          ],
+        });
+      } catch (e) {}
+    }
+
     const generatedOrderNum = `EC-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const orderItems: OrderItem[] = cart.map((item) => ({
@@ -92,6 +120,7 @@ export default function CheckoutPage() {
 
     try {
       await createOrder({
+        userId: currentUser.id,
         orderNumber: generatedOrderNum,
         status: 'pending',
         items: orderItems,
@@ -103,14 +132,14 @@ export default function CheckoutPage() {
         shippingAddress: {
           id: `addr-${Date.now()}`,
           label: 'Shipping Address',
-          firstName: shippingData?.firstName || 'Customer',
-          lastName: shippingData?.lastName || '',
+          firstName: shippingData?.firstName || currentUser.firstName || 'Customer',
+          lastName: shippingData?.lastName || currentUser.lastName || '',
           line1: shippingData?.line1 || '',
           line2: shippingData?.line2 || '',
           city: shippingData?.city || '',
           state: shippingData?.state || '',
           zip: shippingData?.zip || '',
-          country: shippingData?.country || 'United States',
+          country: shippingData?.country || 'Pakistan',
           phone: shippingData?.phone || '',
         },
         paymentMethod: paymentMethodLabel,

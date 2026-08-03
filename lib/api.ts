@@ -347,10 +347,68 @@ export async function getReviewsByProductId(productId: string): Promise<Review[]
 // ─── Orders & User ────────────────────────────────────────────────────────
 
 const ORDERS_STORAGE_KEY = 'ecommerce_orders_data_v1';
+const USER_STORAGE_KEY = 'ecommerce_guest_user_v1';
+
+export function getOrCreateGuestUser(): User {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem(USER_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.id) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading guest user from localStorage:', e);
+    }
+    const randNum = Math.floor(1000 + Math.random() * 9000);
+    const guestUser: User = {
+      id: `guest_${Date.now()}_${randNum}`,
+      firstName: 'Guest',
+      lastName: `#${randNum}`,
+      email: `guest_${randNum}@store.guest`,
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&q=80',
+      phone: '',
+      addresses: [],
+      createdAt: new Date().toISOString(),
+    };
+    try {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(guestUser));
+    } catch (e) {
+      console.warn('Error saving guest user to localStorage:', e);
+    }
+    return guestUser;
+  }
+  return mockUser;
+}
+
+export async function getCurrentUser(): Promise<User> {
+  return getOrCreateGuestUser();
+}
+
+export async function updateCurrentUser(updates: Partial<User>): Promise<User> {
+  const current = getOrCreateGuestUser();
+  const updated: User = {
+    ...current,
+    ...updates,
+    addresses: updates.addresses || current.addresses || [],
+  };
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Error saving updated user to localStorage:', e);
+    }
+  }
+  return updated;
+}
 
 function mapOrder(row: any): Order {
+  const shippingAddr = row.shipping_address || {};
   return {
     id: row.id,
+    userId: row.user_id || shippingAddr.guestUserId || row.userId,
     orderNumber: row.order_number,
     status: (row.status || 'pending') as OrderStatus,
     items: Array.isArray(row.items) ? row.items : [],
@@ -359,7 +417,7 @@ function mapOrder(row: any): Order {
     tax: Number(row.tax || 0),
     discount: Number(row.discount || 0),
     total: Number(row.total || 0),
-    shippingAddress: row.shipping_address || {},
+    shippingAddress: shippingAddr,
     paymentMethod: row.payment_method || 'Credit Card',
     createdAt: row.created_at || new Date().toISOString(),
     updatedAt: row.updated_at || new Date().toISOString(),
@@ -396,16 +454,35 @@ function saveLocalOrders(orders: Order[]): void {
 }
 
 export async function createOrder(orderData: Partial<Order>): Promise<Order> {
+  const currentUser = getOrCreateGuestUser();
   const now = new Date().toISOString();
   const id = orderData.id || `ord-${Date.now()}`;
+  const userId = orderData.userId || currentUser.id;
   const orderNumber =
     orderData.orderNumber ||
     `EC-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(
       new Date().getDate()
     ).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
+  const shippingAddressObj = {
+    ...(orderData.shippingAddress || {
+      id: `addr-${Date.now()}`,
+      label: 'Shipping Address',
+      firstName: currentUser.firstName || 'Customer',
+      lastName: currentUser.lastName || '',
+      line1: '123 Main St',
+      city: 'City',
+      state: 'State',
+      zip: '00000',
+      country: 'United States',
+      phone: '',
+    }),
+    guestUserId: userId,
+  };
+
   const newOrder: Order = {
     id,
+    userId,
     orderNumber,
     status: orderData.status || 'pending',
     items: orderData.items || [],
@@ -414,18 +491,7 @@ export async function createOrder(orderData: Partial<Order>): Promise<Order> {
     tax: Number(orderData.tax || 0),
     discount: Number(orderData.discount || 0),
     total: Number(orderData.total || 0),
-    shippingAddress: orderData.shippingAddress || {
-      id: `addr-${Date.now()}`,
-      label: 'Shipping Address',
-      firstName: 'Customer',
-      lastName: '',
-      line1: '123 Main St',
-      city: 'City',
-      state: 'State',
-      zip: '00000',
-      country: 'United States',
-      phone: '',
-    },
+    shippingAddress: shippingAddressObj,
     paymentMethod: orderData.paymentMethod || 'Credit Card',
     createdAt: orderData.createdAt || now,
     updatedAt: orderData.updatedAt || now,
@@ -468,8 +534,11 @@ export async function createOrder(orderData: Partial<Order>): Promise<Order> {
 
   // 2. Also save to Supabase
   try {
+    const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId || '');
+
     const payload = {
       id: newOrder.id,
+      user_id: isValidUuid ? userId : null,
       order_number: newOrder.orderNumber,
       status: newOrder.status,
       items: newOrder.items,
@@ -500,7 +569,7 @@ export async function createOrder(orderData: Partial<Order>): Promise<Order> {
   return newOrder;
 }
 
-export async function getOrders(): Promise<Order[]> {
+export async function getOrders(userIdFilter?: string): Promise<Order[]> {
   const localOrders = getLocalOrders();
   let dbOrders: Order[] = [];
 
@@ -527,11 +596,20 @@ export async function getOrders(): Promise<Order[]> {
     orderMap.set(o.id, o);
   }
 
-  const merged = Array.from(orderMap.values()).sort(
+  let merged = Array.from(orderMap.values()).sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  saveLocalOrders(merged);
+  // If userIdFilter is provided (for customer account history), filter to only return that device's orders.
+  if (userIdFilter) {
+    merged = merged.filter(
+      (o) => o.userId === userIdFilter || o.shippingAddress?.guestUserId === userIdFilter
+    );
+  } else {
+    // If no userIdFilter (e.g. for Admin Dashboard), save merged orders and return ALL orders across all devices.
+    saveLocalOrders(merged);
+  }
+
   return merged;
 }
 
@@ -595,10 +673,6 @@ export async function uploadProductImage(file: File): Promise<string> {
   }
 
   return publicUrlData.publicUrl;
-}
-
-export async function getCurrentUser(): Promise<User> {
-  return mockUser;
 }
 
 // ─── Promo Codes ──────────────────────────────────────────────────────────

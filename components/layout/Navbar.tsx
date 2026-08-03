@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ShoppingBag, Heart } from 'lucide-react';
+import { Menu, X, ShoppingBag, Heart, User } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
@@ -104,6 +104,15 @@ export function Navbar() {
                 )}
               </Link>
 
+              <Link
+                href="/account"
+                className="relative p-2 text-[#131213] hover:text-[#B57A20] transition-colors"
+                aria-label="My Account & Orders"
+                title="My Account & Orders"
+              >
+                <User className="h-5 w-5" />
+              </Link>
+
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -148,6 +157,13 @@ export function Navbar() {
             className="py-2 text-[#131213] hover:text-[#B57A20] border-b border-[#e7dccb]/50"
           >
             FAQs
+          </Link>
+          <Link
+            href="/account"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="py-2 text-[#131213] hover:text-[#B57A20]"
+          >
+            Account / My Orders
           </Link>
         </div>
       )}
