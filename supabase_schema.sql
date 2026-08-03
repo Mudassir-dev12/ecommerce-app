@@ -126,8 +126,15 @@ CREATE POLICY "Allow admin delete reviews" ON public.reviews FOR DELETE TO publi
 -- USER POLICIES FOR ORDERS & PROFILES
 DROP POLICY IF EXISTS "Users can view own orders" ON public.orders;
 DROP POLICY IF EXISTS "Users can insert own orders" ON public.orders;
-CREATE POLICY "Users can view own orders" ON public.orders FOR SELECT TO public USING (true);
-CREATE POLICY "Users can insert own orders" ON public.orders FOR INSERT TO public WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow public select orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow public insert orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow public update orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow public delete orders" ON public.orders;
+
+CREATE POLICY "Allow public select orders" ON public.orders FOR SELECT TO public USING (true);
+CREATE POLICY "Allow public insert orders" ON public.orders FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow public update orders" ON public.orders FOR UPDATE TO public USING (true) WITH CHECK (true);
+CREATE POLICY "Allow public delete orders" ON public.orders FOR DELETE TO public USING (true);
 
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
