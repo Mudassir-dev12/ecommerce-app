@@ -4,9 +4,24 @@ import * as React from 'react';
 import Image from 'next/image';
 
 const BANNERS = [
-  { id: 1, image: '/1.jpg', alt: 'Modern Traders Fashion Picture 1' },
-  { id: 2, image: '/2.jpg', alt: 'Modern Traders Fashion Picture 2' },
-  { id: 3, image: '/3.jpg', alt: 'Modern Traders Fashion Picture 3' },
+  {
+    id: 1,
+    desktopImage: '/b1.png',
+    mobileImage: '/b1.1.png',
+    alt: 'Modern Traders Fashion Banner 1',
+  },
+  {
+    id: 2,
+    desktopImage: '/b2.png',
+    mobileImage: '/b2.1.png',
+    alt: 'Modern Traders Fashion Banner 2',
+  },
+  {
+    id: 3,
+    desktopImage: '/b3.png',
+    mobileImage: '/b3.1.png',
+    alt: 'Modern Traders Fashion Banner 3',
+  },
 ];
 
 export function HeroScrollBanners() {
@@ -23,17 +38,28 @@ export function HeroScrollBanners() {
               top: '0px',
               zIndex: zIndex,
             }}
-            className="relative w-full h-screen min-h-[600px] overflow-hidden bg-neutral-950 rounded-none border-none shadow-none transition-all duration-500 ease-out"
+            className="relative w-full h-screen min-h-[550px] overflow-hidden bg-neutral-950 rounded-none border-none shadow-none transition-all duration-500 ease-out"
           >
-            {/* Pure Full-Bleed Picture behind Transparent Navbar */}
+            {/* Full-Bleed Hero Banner */}
             <div className="relative w-full h-full rounded-none overflow-hidden">
+              {/* Desktop Banner Image (b1.png, b2.png, b3.png for md+ screens) */}
               <Image
-                src={banner.image}
+                src={banner.desktopImage}
                 alt={banner.alt}
                 fill
                 priority={index === 0}
                 sizes="100vw"
-                className="object-cover object-center rounded-none"
+                className="hidden md:block object-cover object-center rounded-none"
+              />
+
+              {/* Mobile Banner Image (b1.1.png, b2.1.png, b3.1.png for mobile screens) */}
+              <Image
+                src={banner.mobileImage}
+                alt={`${banner.alt} Mobile`}
+                fill
+                priority={index === 0}
+                sizes="100vw"
+                className="block md:hidden object-cover object-center rounded-none"
               />
             </div>
           </div>

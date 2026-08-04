@@ -3,18 +3,69 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, CreditCard, Heart, Minus, Plus } from 'lucide-react';
-import type { Product, WishlistItem } from '@/types';
+import type { Product } from '@/types';
 import { useStore } from '@/lib/store';
 import { useToast } from '@/components/ui/Toast';
-import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { formatPrice, applyDiscount } from '@/lib/utils';
+import { formatPrice } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 export interface ProductClientDetailsProps {
   product: Product;
   /** Called with the image index to switch when user picks a color */
   onColorSelect?: (imageIndex: number) => void;
+}
+
+// Complete real color hex map for precise swatch rendering
+const COLOR_HEX_MAP: Record<string, string> = {
+  black: '#111111',
+  white: '#FFFFFF',
+  skin: '#E5C3A6',
+  nude: '#E5C3A6',
+  purple: '#6A3273',
+  'purple grey': '#6A3273',
+  'purple gray': '#6A3273',
+  mauve: '#9E7B9B',
+  'pista green': '#9AB992',
+  pista: '#9AB992',
+  grey: '#78808A',
+  gray: '#78808A',
+  peach: '#F4A688',
+  'dusty rose': '#EBA99A',
+  plum: '#4A2E35',
+  golden: '#D4AF37',
+  gold: '#D4AF37',
+  'champagne gold': '#D4AF37',
+  'emerald green': '#2E5A44',
+  'royal navy': '#1B2A4A',
+  red: '#DC2626',
+  blue: '#2563EB',
+  green: '#16A34A',
+  yellow: '#EAB308',
+  pink: '#EC4899',
+  orange: '#F97316',
+};
+
+function getColorHex(value?: string, label?: string): string {
+  const labelKey = (label || '').toLowerCase().trim();
+  const valueKey = (value || '').toLowerCase().trim();
+
+  // 1. Match label against real color dictionary first to avoid generic defaults
+  for (const [name, hex] of Object.entries(COLOR_HEX_MAP)) {
+    if (labelKey && labelKey.includes(name)) return hex;
+  }
+
+  // 2. Check value if it's a specific hex code distinct from generic fallback
+  if (value && (value.startsWith('#') || value.startsWith('rgb')) && value.toUpperCase() !== '#9E7B9B') {
+    return value;
+  }
+
+  // 3. Match value string against dictionary
+  for (const [name, hex] of Object.entries(COLOR_HEX_MAP)) {
+    if (valueKey && valueKey.includes(name)) return hex;
+  }
+
+  return '#9AB992';
 }
 
 export function ProductClientDetails({ product, onColorSelect }: ProductClientDetailsProps) {
@@ -30,8 +81,11 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
   const colorVariants = product.variants.filter((v) => v.type === 'color');
   const sizeVariants = product.variants.filter((v) => v.type === 'size');
 
-  // Selected variant state
-  const [selectedColor, setSelectedColor] = React.useState(
+  // Selected variant state - track unique ID to avoid multiple ring highlights
+  const [selectedColorId, setSelectedColorId] = React.useState<string | undefined>(
+    colorVariants.length > 0 ? colorVariants[0].id : undefined
+  );
+  const [selectedColor, setSelectedColor] = React.useState<string | undefined>(
     colorVariants.length > 0 ? colorVariants[0].value : undefined
   );
   const [selectedSize, setSelectedSize] = React.useState(
@@ -42,7 +96,7 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
   const [quantity, setQuantity] = React.useState(1);
 
   // Price calculations based on selected variants
-  const activeColorObject = colorVariants.find((c) => c.value === selectedColor);
+  const activeColorObject = colorVariants.find((c) => c.id === selectedColorId) || colorVariants[0];
   const activeSizeObject = sizeVariants.find((s) => s.value === selectedSize);
 
   const priceModifier =
@@ -91,7 +145,6 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
       return;
     }
 
-    // Add item and go directly to checkout
     addToCart(
       {
         productId: product.id,
@@ -108,27 +161,6 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
     );
 
     router.push('/checkout');
-  };
-
-  const handleWishlistToggle = () => {
-    toggleWishlist({
-      productId: product.id,
-      slug: product.slug,
-      name: product.name,
-      brand: product.brand,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      image: product.images[0]?.url || '',
-      rating: product.rating,
-      inStock: isAvailable,
-    });
-
-    toast(
-      isInWishlist
-        ? `Removed "${product.name}" from wishlist.`
-        : `Added "${product.name}" to wishlist.`,
-      'info'
-    );
   };
 
   return (
@@ -154,6 +186,7 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
         )}
       </div>
 
+      {/* ─── Color Variant Selection (Strict Single-Selection Ring Highlights) ─── */}
       {colorVariants.length > 0 && (
         <div className="space-y-3 bg-white border border-neutral-200 p-4 rounded-2xl shadow-sm">
           <div className="flex justify-between items-center text-sm font-semibold">
@@ -166,33 +199,38 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
             </span>
           </div>
           
-          <div className="flex flex-wrap items-center gap-3 pt-1">
+          <div className="flex flex-wrap items-center gap-4 pt-1">
             {colorVariants.map((col, colIdx) => {
-              const isSelected = selectedColor === col.value;
-              const isHexColor = col.value && (col.value.startsWith('#') || col.value.startsWith('rgb'));
+              const isSelected = selectedColorId ? col.id === selectedColorId : colIdx === 0;
+              const colorHex = getColorHex(col.value, col.label);
+              const isWhite = colorHex.toUpperCase() === '#FFFFFF' || colorHex.toUpperCase() === '#FFF';
+
               return (
                 <button
                   key={col.id}
                   type="button"
                   onClick={() => {
+                    setSelectedColorId(col.id);
                     setSelectedColor(col.value);
-                    // Switch gallery image to the image at this color's index (clamped to available images)
                     onColorSelect?.(colIdx);
                   }}
                   className={cn(
-                    'group relative flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all focus:outline-none active:scale-95 shadow-sm',
-                    isSelected
-                      ? 'border-[#B57A20] bg-white ring-2 ring-[#B57A20] ring-offset-1 text-[#131213] font-bold shadow-md'
-                      : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400 hover:bg-[#FAF6F0]'
+                    'group flex items-center gap-2 py-1 px-1.5 rounded-lg border-0 bg-transparent transition-all focus:outline-none active:scale-95 text-xs cursor-pointer',
+                    isSelected ? 'font-bold text-[#B57A20]' : 'font-medium text-neutral-700 hover:text-neutral-900'
                   )}
                   title={col.label}
                   aria-label={col.label}
                 >
+                  {/* Swatch Circle showing exact real color, with selection ring ONLY on active selected item */}
                   <span
-                    className="h-4 w-4 rounded-full border border-neutral-300 shadow-inner shrink-0"
-                    style={{ backgroundColor: isHexColor ? col.value : '#9E7B9B' }}
+                    className={cn(
+                      'h-5 w-5 rounded-full shrink-0 shadow-sm transition-transform group-hover:scale-110',
+                      isWhite && 'border border-neutral-300',
+                      isSelected ? 'ring-2 ring-offset-2 ring-[#B57A20] scale-105' : 'ring-0'
+                    )}
+                    style={{ backgroundColor: colorHex }}
                   />
-                  <span className="text-xs font-semibold">{col.label}</span>
+                  <span className="text-xs">{col.label}</span>
                 </button>
               );
             })}
@@ -200,7 +238,7 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
         </div>
       )}
 
-      {/* ─── Size Variant Selection ─── */}
+      {/* ─── Size Variant Selection (if present) ─── */}
       {sizeVariants.length > 0 && (
         <div className="space-y-2.5">
           <div className="flex justify-between text-sm font-semibold">
@@ -218,8 +256,8 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
                   className={cn(
                     'flex h-10 min-w-10 items-center justify-center rounded-lg border text-sm font-bold transition-all px-3.5 focus:outline-none disabled:opacity-30 disabled:pointer-events-none active:scale-95',
                     isSelected
-                      ? 'border-primary-600 bg-primary-50 text-primary-700 shadow-sm'
-                      : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400'
+                      ? 'border-[#B57A20] bg-white text-[#B57A20] shadow-sm'
+                      : 'border-neutral-200 bg-white hover:border-neutral-400 text-neutral-700'
                   )}
                 >
                   {sz.label}
@@ -271,9 +309,8 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
         </div>
       </div>
 
-      {/* ─── Call to Actions (Add to Cart & Buy Now - Larger Height & Text Stack) ─── */}
+      {/* ─── Call to Actions ─── */}
       <div className="flex flex-col gap-3.5 pt-4 border-t border-neutral-100">
-        {/* Add to Cart Button (Top Pill) */}
         <button
           type="button"
           onClick={handleAddToCart}
@@ -284,7 +321,6 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
           <span>{isAvailable ? 'Add to Cart' : 'Out of Stock'}</span>
         </button>
 
-        {/* Buy It Now Button (Bottom Pill) */}
         <button
           type="button"
           onClick={handleBuyNow}

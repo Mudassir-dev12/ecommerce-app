@@ -5,7 +5,6 @@ import { Percent, ShieldCheck, Zap } from 'lucide-react';
 import { getProducts, getCategories } from '@/lib/api';
 import { HeroScrollBanners } from '@/components/home/HeroScrollBanners';
 import { ProductCarouselSection } from '@/components/product/ProductCarouselSection';
-
 import { HomeCategoriesSection } from '@/components/home/HomeCategoriesSection';
 
 export const dynamic = 'force-dynamic';
@@ -32,7 +31,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-16 pb-16">
       
-      {/* ─── Full-Screen Vertical Scroll Banners ─ */}
+      {/* ─── Full-Screen Vertical Scroll Banners ───────────────────────────── */}
       <HeroScrollBanners />
 
       {/* ─── Circular Story Avatar Categories (Dynamic) ──────────────────────── */}
@@ -47,13 +46,13 @@ export default async function HomePage() {
         autoPlayInterval={3500}
       />
 
-      {/* ─── Banner 1 (b4.jpg) ───────────────────────────────────────────── */}
+      {/* ─── Banner 1 (7.png) ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
-        <Link href="/products" className="relative block w-full bg-[#f4f2ed] overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+        <Link href="/products" className="relative block w-full bg-white border border-neutral-200 overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="relative w-full h-[220px] sm:h-[360px] md:h-[460px] lg:h-[520px]">
             <Image
-              src="/b4.jpg"
-              alt="Luxury Edition - b4"
+              src="/7.png"
+              alt="Luxury Edition - 7"
               fill
               sizes="(max-width: 1280px) 100vw, 1280px"
               priority
@@ -72,13 +71,13 @@ export default async function HomePage() {
         autoPlayInterval={4000}
       />
 
-      {/* ─── Banner 2 (b5.jpg) ───────────────────────────────────────────── */}
+      {/* ─── Banner 2 (8.png) ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
-        <Link href="/products" className="relative block w-full bg-[#f4f2ed] overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+        <Link href="/products" className="relative block w-full bg-white border border-neutral-200 overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="relative w-full h-[220px] sm:h-[360px] md:h-[460px] lg:h-[520px]">
             <Image
-              src="/b5.jpg"
-              alt="Luxury Collection - b5"
+              src="/8.png"
+              alt="Luxury Collection - 8"
               fill
               sizes="(max-width: 1280px) 100vw, 1280px"
               className="object-cover object-center hover:scale-102 transition-transform duration-700"
@@ -96,13 +95,28 @@ export default async function HomePage() {
         autoPlayInterval={4500}
       />
 
-      {/* ─── Banner 3 (b6.jpg) ───────────────────────────────────────────── */}
+      {/* ─── Banner 3 (9.png) ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
-        <Link href="/products" className="relative block w-full bg-[#f4f2ed] overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+        <Link href="/products" className="relative block w-full bg-white border border-neutral-200 overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-shadow">
           <div className="relative w-full h-[220px] sm:h-[360px] md:h-[460px] lg:h-[520px]">
             <Image
-              src="/b6.jpg"
-              alt="Luxury Arrival - b6"
+              src="/9.png"
+              alt="Luxury Arrival - 9"
+              fill
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              className="object-cover object-center hover:scale-102 transition-transform duration-700"
+            />
+          </div>
+        </Link>
+      </section>
+
+      {/* ─── Banner 4 (10.png) ───────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
+        <Link href="/products" className="relative block w-full bg-white border border-neutral-200 overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+          <div className="relative w-full h-[220px] sm:h-[360px] md:h-[460px] lg:h-[520px]">
+            <Image
+              src="/10.png"
+              alt="Couture Series - 10"
               fill
               sizes="(max-width: 1280px) 100vw, 1280px"
               className="object-cover object-center hover:scale-102 transition-transform duration-700"
@@ -115,7 +129,7 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
         <div className="rounded-3xl bg-white border border-neutral-200 p-8 sm:p-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left shadow-sm">
           <div className="space-y-3 hover-lift p-2 rounded-xl">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-primary-600 mx-auto md:mx-0 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-primary-600 mx-auto md:mx-0 shadow-sm border border-neutral-100">
               <Zap className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-bold text-neutral-900">Lightning-Fast Ordering</h3>
@@ -124,7 +138,7 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="space-y-3 hover-lift p-2 rounded-xl">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-primary-600 mx-auto md:mx-0 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-primary-600 mx-auto md:mx-0 shadow-sm border border-neutral-100">
               <Percent className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-bold text-neutral-900">Amazing Deals &amp; Discounts</h3>
@@ -133,7 +147,7 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="space-y-3 hover-lift p-2 rounded-xl">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-primary-600 mx-auto md:mx-0 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-primary-600 mx-auto md:mx-0 shadow-sm border border-neutral-100">
               <ShieldCheck className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-bold text-neutral-900">100% Quality Guaranteed</h3>
@@ -147,4 +161,3 @@ export default async function HomePage() {
     </div>
   );
 }
-

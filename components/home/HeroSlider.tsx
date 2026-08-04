@@ -7,7 +7,8 @@ import { ChevronLeft, ChevronRight, ChevronDown, ArrowRight } from 'lucide-react
 
 interface BannerSlide {
   id: number;
-  image: string;
+  desktopImage: string;
+  mobileImage: string;
   subtitle: string;
   title: string;
   highlight: string;
@@ -18,7 +19,8 @@ interface BannerSlide {
 const BANNERS: BannerSlide[] = [
   {
     id: 1,
-    image: '/1.jpg',
+    desktopImage: '/b1.png',
+    mobileImage: '/b1.1.png',
     subtitle: 'Grace, Handcrafted.',
     title: 'Womens Arrival',
     highlight: 'Collection ’26',
@@ -27,7 +29,8 @@ const BANNERS: BannerSlide[] = [
   },
   {
     id: 2,
-    image: '/2.jpg',
+    desktopImage: '/b2.png',
+    mobileImage: '/b2.1.png',
     subtitle: 'Timeless Luxury & Style',
     title: 'Unstitched Festive',
     highlight: 'Luxury Edition',
@@ -36,7 +39,8 @@ const BANNERS: BannerSlide[] = [
   },
   {
     id: 3,
-    image: '/3.jpg',
+    desktopImage: '/b3.png',
+    mobileImage: '/b3.1.png',
     subtitle: 'Pure Silk & Premium Lawn',
     title: 'Embroidered Pret',
     highlight: 'Couture Series',
@@ -49,7 +53,7 @@ export function HeroSlider() {
   const [currentSlide, setCurrentSlide] = React.useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = React.useState(true);
 
-  // Auto-advance slides every 5 seconds
+  // Auto-advance slides every 5.5 seconds
   React.useEffect(() => {
     if (!isAutoPlaying) return;
 
@@ -91,12 +95,23 @@ export function HeroSlider() {
           >
             {/* Full-bleed background image with subtle scale effect */}
             <div className="relative w-full h-full">
+              {/* Desktop Image */}
               <Image
-                src={banner.image}
+                src={banner.desktopImage}
                 alt={banner.title}
                 fill
                 priority={index === 0}
-                className={`object-cover object-center transition-transform duration-[6000ms] ease-out ${
+                className={`hidden md:block object-cover object-center transition-transform duration-[6000ms] ease-out ${
+                  isActive ? 'scale-105' : 'scale-100'
+                }`}
+              />
+              {/* Mobile Image */}
+              <Image
+                src={banner.mobileImage}
+                alt={`${banner.title} Mobile`}
+                fill
+                priority={index === 0}
+                className={`block md:hidden object-cover object-center transition-transform duration-[6000ms] ease-out ${
                   isActive ? 'scale-105' : 'scale-100'
                 }`}
               />
@@ -152,7 +167,7 @@ export function HeroSlider() {
         <ChevronRight className="h-6 w-6" />
       </button>
 
-      {/* Vertical Dots Navigation Indicator (Right side - as in saya.pk) */}
+      {/* Vertical Dots Navigation Indicator */}
       <div className="absolute right-6 top-1/2 -translate-y-1/2 z-20 hidden sm:flex flex-col gap-3">
         {BANNERS.map((_, i) => (
           <button
@@ -171,7 +186,7 @@ export function HeroSlider() {
         ))}
       </div>
 
-      {/* Smooth Scroll Down Indicator Chevron (Bottom Center - as in saya.pk) */}
+      {/* Scroll Down Indicator */}
       <button
         onClick={scrollToShop}
         className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1 text-white/70 hover:text-white transition-all cursor-pointer animate-bounce-slow"
