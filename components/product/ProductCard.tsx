@@ -97,7 +97,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
         {/* Thumbnail Box */}
         <Link
           href={`/products/${product.slug}`}
-          className="relative aspect-[3/4] h-48 w-36 sm:w-40 shrink-0 overflow-hidden rounded-xl bg-[#FAF6F0]/60 p-1 flex items-center justify-center"
+          className="relative aspect-[3/4] h-48 w-36 sm:w-40 shrink-0 overflow-hidden rounded-xl bg-neutral-50 p-1 flex items-center justify-center border border-neutral-100"
         >
           <Image
             src={primaryImage?.url || ''}
@@ -206,7 +206,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
         {/* Thumbnail Box (3:4 Portrait Canvas to prevent dress image top/bottom cropping) */}
         <Link
           href={`/products/${product.slug}`}
-          className="relative block aspect-[3/4] w-full overflow-hidden rounded-xl bg-[#FAF6F0]/60 p-1"
+          className="relative block aspect-[3/4] w-full overflow-hidden rounded-xl bg-neutral-50 p-1 border border-neutral-100"
         >
           <Image
             src={primaryImage?.url || ''}

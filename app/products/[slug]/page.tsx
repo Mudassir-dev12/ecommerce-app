@@ -97,7 +97,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           ].map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="group flex flex-col gap-3 rounded-2xl border border-[#e7dccb]/70 bg-gradient-to-br from-[#FAF6F0] to-white p-5 shadow-sm hover:shadow-md hover:border-[#B57A20]/40 transition-all"
+              className="group flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm hover:shadow-md hover:border-[#B57A20]/40 transition-all"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#B57A20]/10 text-[#B57A20] group-hover:bg-[#B57A20]/20 transition-colors">
                 <Icon className="h-5 w-5" />
@@ -112,7 +112,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
         {/* Description Text */}
         {(product.longDescription || product.description) && (
-          <div className="rounded-2xl bg-[#FAF6F0]/60 border border-[#e7dccb]/60 p-6 text-sm text-neutral-700 leading-relaxed whitespace-pre-line max-w-4xl">
+          <div className="rounded-2xl bg-white border border-neutral-200 p-6 text-sm text-neutral-700 leading-relaxed whitespace-pre-line max-w-4xl shadow-sm">
             {product.longDescription || product.description}
           </div>
         )}
@@ -121,7 +121,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* Specifications Table */}
-          <div className="rounded-2xl border border-[#e7dccb]/70 overflow-hidden shadow-sm">
+          <div className="rounded-2xl border border-neutral-200 overflow-hidden shadow-sm bg-white">
             <div className="bg-gradient-to-r from-[#B57A20] to-[#d4a344] px-5 py-3">
               <p className="text-xs font-extrabold uppercase tracking-widest text-white">Product Specifications</p>
             </div>
@@ -136,7 +136,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                   { label: 'Occasion', value: 'Festive / Semi-Formal' },
                   { label: 'Colors', value: colorVariants.length > 0 ? colorVariants.map(c => c.label).join(', ') : '—' },
                 ].map(({ label, value }, i) => (
-                  <tr key={label} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAF6F0]/60'}>
+                  <tr key={label} className={i % 2 === 0 ? 'bg-white' : 'bg-neutral-50/70'}>
                     <td className="px-5 py-3 font-semibold text-neutral-500 w-2/5">{label}</td>
                     <td className="px-5 py-3 text-neutral-800 font-medium">{value}</td>
                   </tr>
@@ -172,7 +172,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               ].map(({ icon: Icon, label, sub }) => (
                 <div
                   key={label}
-                  className="flex flex-col items-center gap-1.5 rounded-xl border border-[#e7dccb]/60 bg-[#FAF6F0]/60 p-3 text-center shadow-sm"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-neutral-200 bg-white p-3 text-center shadow-sm"
                 >
                   <Icon className="h-5 w-5 text-[#B57A20]" />
                   <p className="text-xs font-bold text-neutral-800 leading-tight">{label}</p>

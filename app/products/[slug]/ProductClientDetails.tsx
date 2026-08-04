@@ -154,9 +154,8 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
         )}
       </div>
 
-      {/* ─── Color Variant Selection ─── */}
       {colorVariants.length > 0 && (
-        <div className="space-y-3 bg-[#FAF6F0]/60 border border-[#e7dccb]/80 p-4 rounded-2xl">
+        <div className="space-y-3 bg-white border border-neutral-200 p-4 rounded-2xl shadow-sm">
           <div className="flex justify-between items-center text-sm font-semibold">
             <span className="text-neutral-500 uppercase tracking-wider text-xs font-bold flex items-center gap-1.5">
               <span>Select Color:</span>
@@ -279,7 +278,7 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
           type="button"
           onClick={handleAddToCart}
           disabled={!isAvailable}
-          className="w-full h-14 sm:h-15 rounded-full border-2 border-[#B57A20]/50 bg-[#FAF6F0] hover:bg-[#F3E7D5] text-[#B57A20] font-extrabold text-base sm:text-lg flex items-center justify-center gap-3 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-14 sm:h-15 rounded-full border-2 border-[#B57A20] bg-white hover:bg-amber-50/50 text-[#B57A20] font-extrabold text-base sm:text-lg flex items-center justify-center gap-3 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ShoppingBag className="h-5 w-5 text-[#B57A20]" />
           <span>{isAvailable ? 'Add to Cart' : 'Out of Stock'}</span>

@@ -40,7 +40,7 @@ export function Navbar() {
       className={cn(
         'sticky top-0 z-50 w-full transition-all duration-500',
         isScrolledPastHero
-          ? 'bg-[#FAEAD9]/85 backdrop-blur-md border-b border-[#e7dccb]/70 shadow-sm'
+          ? 'bg-white/90 backdrop-blur-md border-b border-neutral-200/80 shadow-sm'
           : 'bg-transparent border-none shadow-none backdrop-blur-none'
       )}
     >
@@ -126,7 +126,7 @@ export function Navbar() {
 
       {/* Mobile Navigation Drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-16 sm:top-20 bg-[#FAEAD9]/95 backdrop-blur-md border-b border-[#e7dccb] shadow-xl p-6 z-40 flex flex-col gap-4 font-bold text-base uppercase">
+        <div className="md:hidden fixed inset-x-0 top-16 sm:top-20 bg-white/95 backdrop-blur-md border-b border-neutral-200 shadow-xl p-6 z-40 flex flex-col gap-4 font-bold text-base uppercase">
           <Link
             href="/"
             onClick={() => setIsMobileMenuOpen(false)}

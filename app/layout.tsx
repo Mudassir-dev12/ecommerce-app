@@ -26,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${montserrat.variable}`}>
-      <body className="flex min-h-screen flex-col bg-neutral-50 text-neutral-900 antialiased font-sans">
+      <body className="flex min-h-screen flex-col bg-white text-neutral-900 antialiased font-sans">
         <Providers>
           <SiteShell>
             {children}

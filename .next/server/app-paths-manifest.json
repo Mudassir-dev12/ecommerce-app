@@ -1,6 +1,16 @@
 {
-  "/products/[slug]/page": "app/products/[slug]/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/account/page": "app/account/page.js",
   "/admin/page": "app/admin/page.js",
+  "/api/products/[id]/route": "app/api/products/[id]/route.js",
+  "/api/products/route": "app/api/products/route.js",
+  "/cart/page": "app/cart/page.js",
+  "/checkout/page": "app/checkout/page.js",
+  "/wishlist/page": "app/wishlist/page.js",
+  "/api/keep-alive/route": "app/api/keep-alive/route.js",
   "/page": "app/page.js",
-  "/products/page": "app/products/page.js"
+  "/products/[slug]/page": "app/products/[slug]/page.js",
+  "/reviews/page": "app/reviews/page.js",
+  "/products/page": "app/products/page.js",
+  "/search/page": "app/search/page.js"
 }

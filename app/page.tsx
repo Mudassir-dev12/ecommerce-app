@@ -113,7 +113,7 @@ export default async function HomePage() {
 
       {/* ─── Highlights / Features grid ──────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
-        <div className="rounded-3xl bg-neutral-100 p-8 sm:p-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left border">
+        <div className="rounded-3xl bg-white border border-neutral-200 p-8 sm:p-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left shadow-sm">
           <div className="space-y-3 hover-lift p-2 rounded-xl">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-primary-600 mx-auto md:mx-0 shadow-sm">
               <Zap className="h-6 w-6" />

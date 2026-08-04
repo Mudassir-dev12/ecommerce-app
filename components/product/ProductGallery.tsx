@@ -101,8 +101,7 @@ export function ProductGallery({
   return (
     <div className="flex flex-col gap-4 w-full">
 
-      {/* Main Image Viewport — Portrait 3:4 canvas, edge-to-edge fill */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-md border border-neutral-200/60">
+      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-md border border-neutral-200 bg-white">
 
         {/* Floating Wishlist Heart Icon */}
         {product && (
