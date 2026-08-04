@@ -11,14 +11,39 @@ import { useToast } from '@/components/ui/Toast';
 export interface ProductGalleryProps {
   images: ProductImage[];
   product?: Product;
+  /** Controlled active index – driven by parent when colors are linked */
+  activeIndex?: number;
+  /** Notify parent of index changes (arrows / thumbnails) */
+  onIndexChange?: (idx: number) => void;
 }
 
-export function ProductGallery({ images, product }: ProductGalleryProps) {
+export function ProductGallery({
+  images,
+  product,
+  activeIndex: controlledIndex,
+  onIndexChange,
+}: ProductGalleryProps) {
   const { toast } = useToast();
   const toggleWishlist = useStore((state) => state.toggleWishlist);
   const isInWishlist = useStore((state) => state.isInWishlist(product?.id || ''));
 
-  const [activeIndex, setActiveIndex] = React.useState(0);
+  // Internal index when component is uncontrolled
+  const [internalIndex, setInternalIndex] = React.useState(0);
+
+  const isControlled = controlledIndex !== undefined;
+  const activeIndex = isControlled ? controlledIndex : internalIndex;
+
+  const setActiveIndex = React.useCallback(
+    (idx: number) => {
+      if (isControlled) {
+        onIndexChange?.(idx);
+      } else {
+        setInternalIndex(idx);
+      }
+    },
+    [isControlled, onIndexChange]
+  );
+
   const [isZoomed, setIsZoomed] = React.useState(false);
   const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
 
@@ -47,18 +72,20 @@ export function ProductGallery({ images, product }: ProductGalleryProps) {
 
   if (!images || images.length === 0) {
     return (
-      <div className="aspect-square w-full rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-400">
+      <div className="aspect-[3/4] w-full rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-400">
         No image available
       </div>
     );
   }
 
   const handleNext = () => {
-    setActiveIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    const next = activeIndex === images.length - 1 ? 0 : activeIndex + 1;
+    setActiveIndex(next);
   };
 
   const handlePrev = () => {
-    setActiveIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    const prev = activeIndex === 0 ? images.length - 1 : activeIndex - 1;
+    setActiveIndex(prev);
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -68,30 +95,31 @@ export function ProductGallery({ images, product }: ProductGalleryProps) {
     setMousePos({ x, y });
   };
 
-  const activeImage = images[activeIndex];
+  const safeIndex = Math.min(activeIndex, images.length - 1);
+  const activeImage = images[safeIndex];
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      
-      {/* Main Image Viewport */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-neutral-50 border border-neutral-100">
-        
-        {/* Floating Wishlist Heart Icon (No bg circle) */}
+
+      {/* Main Image Viewport — Portrait 3:4 canvas, edge-to-edge fill */}
+      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-md border border-neutral-200/60">
+
+        {/* Floating Wishlist Heart Icon */}
         {product && (
           <button
             onClick={handleWishlistToggle}
             className={cn(
-              'absolute right-5 top-5 z-20 p-2 transition-transform hover:scale-125 active:scale-95 drop-shadow-lg focus:outline-none',
+              'absolute right-4 top-4 z-20 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-md transition-transform hover:scale-110 active:scale-95 focus:outline-none',
               isInWishlist ? 'text-rose-500' : 'text-neutral-700 hover:text-rose-500'
             )}
             title={isInWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
             aria-label="Wishlist toggle"
           >
-            <Heart className="h-7 w-7 sm:h-8 sm:w-8" fill={isInWishlist ? 'currentColor' : 'none'} />
+            <Heart className="h-6 w-6 sm:h-7 sm:w-7" fill={isInWishlist ? 'currentColor' : 'none'} />
           </button>
         )}
 
-        {/* Zoomable Image frame */}
+        {/* Zoomable Image frame — object-cover fills canvas edge-to-edge, anchored to top */}
         <div
           className="relative h-full w-full cursor-zoom-in overflow-hidden"
           onMouseEnter={() => setIsZoomed(true)}
@@ -103,33 +131,32 @@ export function ProductGallery({ images, product }: ProductGalleryProps) {
             alt={activeImage.alt || 'Product image'}
             fill
             priority
-            sizes="(max-w-768px) 100vw, 600px"
-            className={cn('object-cover object-center transition-transform duration-200 select-none', {
-              'scale-150 duration-75': isZoomed,
-            })}
+            sizes="(max-width: 768px) 100vw, 700px"
+            className={cn(
+              'object-cover object-top select-none transition-transform duration-200',
+              { 'scale-150 duration-75': isZoomed }
+            )}
             style={
               isZoomed
-                ? {
-                    transformOrigin: `${mousePos.x}% ${mousePos.y}%`,
-                  }
+                ? { transformOrigin: `${mousePos.x}% ${mousePos.y}%` }
                 : undefined
             }
           />
         </div>
 
-        {/* Carousel slide controls (if multiple images) */}
+        {/* Carousel controls (only if multiple images) */}
         {images.length > 1 && (
           <>
             <button
               onClick={handlePrev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-neutral-700 shadow-md backdrop-blur-sm transition-all hover:bg-white active:scale-95"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-neutral-800 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-105 active:scale-95"
               aria-label="Previous image"
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
             <button
               onClick={handleNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-neutral-700 shadow-md backdrop-blur-sm transition-all hover:bg-white active:scale-95"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-neutral-800 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-105 active:scale-95"
               aria-label="Next image"
             >
               <ChevronRight className="h-6 w-6" />
@@ -140,24 +167,24 @@ export function ProductGallery({ images, product }: ProductGalleryProps) {
 
       {/* Thumbnails strip */}
       {images.length > 1 && (
-        <div className="flex items-center gap-3 overflow-x-auto pb-1">
+        <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
           {images.map((img, idx) => (
             <button
               key={img.id}
               onClick={() => setActiveIndex(idx)}
               className={cn(
-                'relative aspect-square w-20 overflow-hidden rounded-xl bg-neutral-50 border-2 transition-all shrink-0 hover:opacity-95',
-                activeIndex === idx
-                  ? 'border-primary-600 scale-[1.03] shadow-sm'
-                  : 'border-transparent opacity-75'
+                'relative aspect-[3/4] h-20 sm:h-24 overflow-hidden rounded-xl border-2 transition-all shrink-0 hover:opacity-95',
+                safeIndex === idx
+                  ? 'border-[#B57A20] scale-[1.03] shadow-md ring-1 ring-[#B57A20]'
+                  : 'border-neutral-200 opacity-70'
               )}
             >
               <Image
                 src={img.url}
                 alt={img.alt || 'Thumbnail'}
                 fill
-                sizes="80px"
-                className="object-cover object-center"
+                sizes="96px"
+                className="object-cover object-top"
               />
             </button>
           ))}

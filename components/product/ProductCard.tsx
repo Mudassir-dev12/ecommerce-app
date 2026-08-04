@@ -97,16 +97,16 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
         {/* Thumbnail Box */}
         <Link
           href={`/products/${product.slug}`}
-          className="relative h-48 w-full sm:w-48 shrink-0 overflow-hidden rounded-xl bg-neutral-50 flex items-center justify-center"
+          className="relative aspect-[3/4] h-48 w-36 sm:w-40 shrink-0 overflow-hidden rounded-xl bg-[#FAF6F0]/60 p-1 flex items-center justify-center"
         >
           <Image
             src={primaryImage?.url || ''}
             alt={primaryImage?.alt || product.name}
             fill
-            sizes="(max-w-640px) 100vw, 192px"
+            sizes="(max-w-640px) 100vw, 160px"
             priority={product.isFeatured}
             className={cn(
-              'object-cover object-center group-hover:scale-105 transition-transform duration-500',
+              'object-cover object-top group-hover:scale-105 transition-transform duration-500 rounded-lg',
               !isAvailable && 'opacity-60 grayscale-[20%]'
             )}
           />
@@ -203,19 +203,19 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
           <Heart className="h-5.5 w-5.5 sm:h-6 sm:w-6" fill={isWishlisted ? 'currentColor' : 'none'} />
         </button>
 
-        {/* Thumbnail Box */}
+        {/* Thumbnail Box (3:4 Portrait Canvas to prevent dress image top/bottom cropping) */}
         <Link
           href={`/products/${product.slug}`}
-          className="relative block aspect-square w-full overflow-hidden rounded-xl bg-neutral-50"
+          className="relative block aspect-[3/4] w-full overflow-hidden rounded-xl bg-[#FAF6F0]/60 p-1"
         >
           <Image
             src={primaryImage?.url || ''}
             alt={primaryImage?.alt || product.name}
             fill
-            sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 250px"
+            sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 300px"
             priority={product.isFeatured}
             className={cn(
-              'object-cover object-center group-hover:scale-105 transition-transform duration-500',
+              'object-cover object-top group-hover:scale-105 transition-transform duration-500 rounded-lg',
               !isAvailable && 'opacity-60 grayscale-[20%]'
             )}
           />

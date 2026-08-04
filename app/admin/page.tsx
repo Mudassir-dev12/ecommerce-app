@@ -190,6 +190,8 @@ export default function AdminDashboardPage() {
     imageUrls: [] as string[],
     description: '',
     sku: '',
+    colorVariantsInput: '',
+    sizeVariantsInput: '',
     inStock: true,
     isFeatured: false,
     isBestSeller: false,
@@ -315,6 +317,8 @@ export default function AdminDashboardPage() {
       imageUrls: [],
       description: '',
       sku: `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
+      colorVariantsInput: 'Mauve, Dusty Rose, Plum, Champagne Gold, Emerald Green, Royal Navy',
+      sizeVariantsInput: 'S, M, L, XL',
       inStock: true,
       isFeatured: false,
       isBestSeller: false,
@@ -327,6 +331,9 @@ export default function AdminDashboardPage() {
     setEditingProduct(product);
     setNewUrlInput('');
     const existingUrls = product.images?.map((img) => img.url).filter(Boolean) || [];
+    const colorVars = product.variants?.filter((v) => v.type === 'color').map((v) => v.label).join(', ') || '';
+    const sizeVars = product.variants?.filter((v) => v.type === 'size').map((v) => v.value).join(', ') || '';
+
     setFormData({
       name: product.name,
       brand: product.brand,
@@ -338,6 +345,8 @@ export default function AdminDashboardPage() {
       imageUrls: existingUrls.length > 0 ? existingUrls : [product.images[0]?.url || ''],
       description: product.description,
       sku: product.sku || '',
+      colorVariantsInput: colorVars,
+      sizeVariantsInput: sizeVars,
       inStock: (Number(product.stockCount) || 0) > 0,
       isFeatured: product.isFeatured || false,
       isBestSeller: product.isBestSeller || false,
@@ -363,6 +372,59 @@ export default function AdminDashboardPage() {
         : [defaultImgUrl];
       const stockCountNum = parseInt(formData.stockCount, 10) || 0;
 
+      // Color palette mapping
+      const COLOR_MAP: Record<string, string> = {
+        mauve: '#9E7B9B',
+        'dusty rose': '#DCAE96',
+        plum: '#4A2E35',
+        'deep violet': '#4A2E35',
+        champagne: '#D4AF37',
+        'champagne gold': '#D4AF37',
+        gold: '#D4AF37',
+        emerald: '#2E5A44',
+        'emerald green': '#2E5A44',
+        navy: '#1B2A4A',
+        'navy blue': '#1B2A4A',
+        'royal navy': '#1B2A4A',
+        black: '#000000',
+        white: '#FFFFFF',
+        red: '#DC2626',
+        blue: '#2563EB',
+        green: '#16A34A',
+        pink: '#EC4899',
+        purple: '#9333EA',
+      };
+
+      const parsedColors = formData.colorVariantsInput
+        .split(',')
+        .map((c) => c.trim())
+        .filter(Boolean)
+        .map((label, idx) => {
+          const key = label.toLowerCase();
+          const hex = COLOR_MAP[key] || '#9E7B9B';
+          return {
+            id: `var-col-${Date.now()}-${idx}`,
+            type: 'color' as const,
+            value: hex,
+            label: label,
+            inStock: true,
+          };
+        });
+
+      const parsedSizes = formData.sizeVariantsInput
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((sz, idx) => ({
+          id: `var-sz-${Date.now()}-${idx}`,
+          type: 'size' as const,
+          value: sz.toUpperCase(),
+          label: sz.toUpperCase() === 'S' ? 'Small (S)' : sz.toUpperCase() === 'M' ? 'Medium (M)' : sz.toUpperCase() === 'L' ? 'Large (L)' : sz.toUpperCase() === 'XL' ? 'X-Large (XL)' : sz,
+          inStock: true,
+        }));
+
+      const variants = [...parsedColors, ...parsedSizes];
+
       const payload: Partial<Product> = {
         name: formData.name,
         brand: formData.brand || 'Generic',
@@ -377,6 +439,7 @@ export default function AdminDashboardPage() {
         isNew: formData.isNew,
         description: formData.description,
         sku: formData.sku,
+        variants: variants,
         images: finalUrls.map((url, idx) => ({
           id: `img-${Date.now()}-${idx}`,
           url,
@@ -844,7 +907,7 @@ export default function AdminDashboardPage() {
                               <img
                                 src={product.images[0]?.url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80'}
                                 alt={product.name}
-                                className="w-11 h-11 object-cover rounded-lg bg-neutral-100 border border-[#e7dccb] shrink-0"
+                                className="w-10 h-13 object-contain rounded-lg bg-[#FAF6F0] border border-[#e7dccb] shrink-0 p-0.5"
                               />
                               <div className="min-w-0">
                                 <div className="font-bold text-[#131213] truncate max-w-xs">
@@ -1452,6 +1515,40 @@ export default function AdminDashboardPage() {
                       No images added yet. Click "Choose & Upload Multiple Files" or paste an Image URL above.
                     </p>
                   )}
+                </div>
+
+                {/* Color Variants */}
+                <div>
+                  <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-1">
+                    Color Attributes (Comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Mauve, Dusty Rose, Plum, Champagne Gold, Emerald Green, Royal Navy"
+                    value={formData.colorVariantsInput}
+                    onChange={(e) => setFormData({ ...formData, colorVariantsInput: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-[#FAF6F0] border border-[#e7dccb] rounded-xl text-sm text-[#131213] focus:outline-none focus:border-[#B57A20]"
+                  />
+                  <span className="text-[10px] text-neutral-400 mt-0.5 block">
+                    Colors enable selection swatches for customers.
+                  </span>
+                </div>
+
+                {/* Size Variants */}
+                <div>
+                  <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-1">
+                    Size Attributes (Comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. S, M, L, XL"
+                    value={formData.sizeVariantsInput}
+                    onChange={(e) => setFormData({ ...formData, sizeVariantsInput: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-[#FAF6F0] border border-[#e7dccb] rounded-xl text-sm text-[#131213] focus:outline-none focus:border-[#B57A20]"
+                  />
+                  <span className="text-[10px] text-neutral-400 mt-0.5 block">
+                    Sizes enable size selection buttons for customers.
+                  </span>
                 </div>
 
                 {/* Description */}

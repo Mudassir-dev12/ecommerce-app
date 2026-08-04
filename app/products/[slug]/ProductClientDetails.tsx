@@ -13,9 +13,11 @@ import { cn } from '@/lib/utils';
 
 export interface ProductClientDetailsProps {
   product: Product;
+  /** Called with the image index to switch when user picks a color */
+  onColorSelect?: (imageIndex: number) => void;
 }
 
-export function ProductClientDetails({ product }: ProductClientDetailsProps) {
+export function ProductClientDetails({ product, onColorSelect }: ProductClientDetailsProps) {
   const router = useRouter();
   const { toast } = useToast();
   const addToCart = useStore((state) => state.addToCart);
@@ -154,26 +156,45 @@ export function ProductClientDetails({ product }: ProductClientDetailsProps) {
 
       {/* ─── Color Variant Selection ─── */}
       {colorVariants.length > 0 && (
-        <div className="space-y-2.5">
-          <div className="flex justify-between text-sm font-semibold">
-            <span className="text-neutral-500 uppercase tracking-wider text-xs">Color</span>
-            <span className="text-neutral-900">{activeColorObject?.label}</span>
+        <div className="space-y-3 bg-[#FAF6F0]/60 border border-[#e7dccb]/80 p-4 rounded-2xl">
+          <div className="flex justify-between items-center text-sm font-semibold">
+            <span className="text-neutral-500 uppercase tracking-wider text-xs font-bold flex items-center gap-1.5">
+              <span>Select Color:</span>
+              <span className="text-[#B57A20] font-extrabold text-sm">{activeColorObject?.label || 'Select a Color'}</span>
+            </span>
+            <span className="text-xs text-neutral-400 font-normal">
+              {colorVariants.length} Color Options Available
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            {colorVariants.map((col) => {
+          
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            {colorVariants.map((col, colIdx) => {
               const isSelected = selectedColor === col.value;
+              const isHexColor = col.value && (col.value.startsWith('#') || col.value.startsWith('rgb'));
               return (
                 <button
                   key={col.id}
-                  onClick={() => setSelectedColor(col.value)}
+                  type="button"
+                  onClick={() => {
+                    setSelectedColor(col.value);
+                    // Switch gallery image to the image at this color's index (clamped to available images)
+                    onColorSelect?.(colIdx);
+                  }}
                   className={cn(
-                    'relative h-8 w-8 rounded-full border border-neutral-300 transition-all focus:outline-none hover:scale-105 active:scale-95',
-                    isSelected ? 'ring-2 ring-primary-600 ring-offset-2' : 'hover:border-neutral-400'
+                    'group relative flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all focus:outline-none active:scale-95 shadow-sm',
+                    isSelected
+                      ? 'border-[#B57A20] bg-white ring-2 ring-[#B57A20] ring-offset-1 text-[#131213] font-bold shadow-md'
+                      : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400 hover:bg-[#FAF6F0]'
                   )}
-                  style={{ backgroundColor: col.value }}
                   title={col.label}
                   aria-label={col.label}
-                />
+                >
+                  <span
+                    className="h-4 w-4 rounded-full border border-neutral-300 shadow-inner shrink-0"
+                    style={{ backgroundColor: isHexColor ? col.value : '#9E7B9B' }}
+                  />
+                  <span className="text-xs font-semibold">{col.label}</span>
+                </button>
               );
             })}
           </div>
