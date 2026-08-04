@@ -204,7 +204,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-8">
+    <div className="checkout-page mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-8">
       
       {/* ─── Breadcrumb ─── */}
       <div className="flex gap-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider">

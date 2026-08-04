@@ -96,33 +96,6 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
         )}
       </div>
 
-      {/* Category List */}
-      <div className="space-y-3">
-        <h5 className="text-sm font-bold text-neutral-800 uppercase tracking-wide">Category</h5>
-        <div className="flex flex-col gap-1.5">
-          {categories.map((cat) => {
-            const isActive = activeCategory === cat.slug;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => handleCategorySelect(cat.slug)}
-                className={cn(
-                  'flex items-center justify-between text-left text-sm py-1.5 px-2 rounded-lg transition-colors',
-                  isActive
-                    ? 'bg-primary-50 text-primary-700 font-semibold'
-                    : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
-                )}
-              >
-                <span>{cat.name}</span>
-                <span className={cn('text-xs text-neutral-400', isActive && 'text-primary-500')}>
-                  {cat.productCount}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Price Range Form */}
       <div className="space-y-3">
         <h5 className="text-sm font-bold text-neutral-800 uppercase tracking-wide">Price Range (Rs.)</h5>

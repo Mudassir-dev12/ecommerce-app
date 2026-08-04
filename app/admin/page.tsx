@@ -311,8 +311,8 @@ export default function AdminDashboardPage() {
       brand: '',
       price: '',
       originalPrice: '',
-      categorySlug: categories[0]?.slug || 'electronics',
-      category: categories[0]?.name || 'Electronics',
+      categorySlug: 'general',
+      category: 'General',
       stockCount: '15',
       imageUrls: [],
       description: '',
@@ -849,23 +849,7 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
-              <div className="flex items-center gap-3 w-full md:w-auto">
-                <div className="relative w-full md:w-48">
-                  <Filter className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full pl-10 pr-8 py-2.5 bg-[#FAF6F0] border border-[#e7dccb] rounded-xl text-sm text-[#131213] focus:outline-none focus:border-[#B57A20] appearance-none cursor-pointer font-medium"
-                  >
-                    <option value="all">All Categories</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.slug}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+
             </div>
 
             {/* Products Table */}
@@ -889,7 +873,7 @@ export default function AdminDashboardPage() {
                     <thead className="bg-[#FAF6F0] text-neutral-600 uppercase text-[11px] tracking-wider font-bold border-b border-[#e7dccb]">
                       <tr>
                         <th className="py-3.5 px-4">Product</th>
-                        <th className="py-3.5 px-4">Category</th>
+
                         <th className="py-3.5 px-4">Price (PKR)</th>
                         <th className="py-3.5 px-4">Stock</th>
                         <th className="py-3.5 px-4">Tags</th>
@@ -921,11 +905,7 @@ export default function AdminDashboardPage() {
                             </div>
                           </td>
 
-                          <td className="py-3.5 px-4">
-                            <span className="inline-block bg-[#FAF6F0] text-[#131213] text-xs px-2.5 py-1 rounded-md border border-[#e7dccb] font-semibold">
-                              {product.category}
-                            </span>
-                          </td>
+
 
                           <td className="py-3.5 px-4 font-extrabold text-[#131213]">
                             {formatPrice(product.price)}
@@ -1307,31 +1287,7 @@ export default function AdminDashboardPage() {
                   />
                 </div>
 
-                {/* Category */}
-                <div>
-                  <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-1">
-                    Category *
-                  </label>
-                  <select
-                    value={formData.categorySlug}
-                    onChange={(e) => {
-                      const slug = e.target.value;
-                      const cat = categories.find((c) => c.slug === slug);
-                      setFormData({
-                        ...formData,
-                        categorySlug: slug,
-                        category: cat ? cat.name : slug,
-                      });
-                    }}
-                    className="w-full px-3.5 py-2 bg-[#FAF6F0] border border-[#e7dccb] rounded-xl text-sm text-[#131213] focus:outline-none focus:border-[#B57A20] font-medium"
-                  >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.slug}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+
 
                 {/* Price (PKR) */}
                 <div>

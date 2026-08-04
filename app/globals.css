@@ -18,6 +18,26 @@ body {
   color: #131213;
 }
 
+/* ─── Global 4px Border Radius & Soft Corner Edges Site-Wide ─── */
+img,
+canvas,
+video,
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl,
+.rounded-lg,
+.rounded-md,
+[class*="card"] {
+  border-radius: 4px !important;
+}
+
+/* Soft subtle borders site-wide */
+.border,
+.border-neutral-200,
+.border-neutral-100 {
+  border-color: rgba(229, 231, 235, 0.4) !important;
+}
+
 /* Custom transitions and luxury features */
 .transition-card {
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -112,3 +132,19 @@ body {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px -6px rgba(181, 122, 32, 0.15);
 }
+
+/* ─── Cart & Checkout Crisp Solid Minor Borders ─── */
+.cart-page .border,
+.cart-page .border-neutral-150,
+.cart-page .border-neutral-155,
+.checkout-page .border,
+.checkout-page .border-neutral-150,
+.checkout-page input,
+.checkout-page select,
+.checkout-page textarea,
+.checkout-page .border-neutral-200 {
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-color: #d1d5db !important; /* crisp light grey solid border for inputs & structures */
+}
+
