@@ -84,7 +84,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             </p>
           </div>
           <a
-            href={`https://wa.me/923192828729?text=${encodeURIComponent(`Hello! I am interested in wholesale / bulk purchase for "${product.name}". Please provide special discounted rates.`)}`}
+            href={`https://wa.me/923258865905?text=${encodeURIComponent(`Hello! I am interested in wholesale / bulk purchase for "${product.name}". Please provide special discounted rates.`)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-3.5 px-6 py-3 bg-[#1fd260] hover:bg-[#1bc055] text-white transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:scale-95 shrink-0"

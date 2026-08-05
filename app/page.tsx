@@ -5,6 +5,7 @@ import { Percent, ShieldCheck, Zap } from 'lucide-react';
 import { getProducts, getCategories } from '@/lib/api';
 import { HeroScrollBanners } from '@/components/home/HeroScrollBanners';
 import { ProductCarouselSection } from '@/components/product/ProductCarouselSection';
+import { HomeVideoSection } from '@/components/home/HomeVideoSection';
 
 
 export const dynamic = 'force-dynamic';
@@ -18,17 +19,10 @@ export default async function HomePage() {
 
   const products = productsRes.products || [];
 
-  // Group dynamic products for distinct category sliders
-  const section1Products = products.length > 0 ? products : [];
-  const section2Products = products.length >= 4 ? [...products.slice(4), ...products.slice(0, 4)] : products;
-  const section3Products = products.length >= 8 ? [...products.slice(8), ...products.slice(0, 8)] : products;
-  const section4Products = products.length >= 2 ? [...products.slice(2), ...products.slice(0, 2)] : products;
-  const section5Products = products.length >= 6 ? [...products.slice(6), ...products.slice(0, 6)] : products;
-
-  // Category labels dynamically derived from fetched categories
-  const cat1 = categories[0] || { name: 'Pret Collection', slug: 'pret' };
-  const cat2 = categories[1] || { name: 'Unstitched', slug: 'unstitched' };
-  const cat3 = categories[2] || { name: 'Luxury Fragrances', slug: 'him' };
+  // Group dynamic products for distinct category sliders (strict non-overlapping slices)
+  const section1Products = products.slice(0, 5);
+  const section2Products = products.slice(5, 10);
+  const section3Products = products.slice(10, 15);
 
   return (
     <div className="space-y-16 pb-16">
@@ -38,13 +32,14 @@ export default async function HomePage() {
 
 
       {/* ─── Product Carousel #1 (After Categories) ───────────────────────── */}
-      <ProductCarouselSection
-        title={`${cat1.name} Collection`}
-        subtitle="Explore our finest handpicked fashion items"
-        categorySlug={cat1.slug}
-        products={section1Products}
-        autoPlayInterval={3500}
-      />
+      {section1Products.length > 0 && (
+        <ProductCarouselSection
+          title="Premium Women's 3-Piece Suit Embroidery"
+          categorySlug={section1Products[0]?.categorySlug || 'all'}
+          products={section1Products}
+          autoPlayInterval={3500}
+        />
+      )}
 
       {/* ─── Banner 1 (7.png) ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
@@ -63,13 +58,14 @@ export default async function HomePage() {
       </section>
 
       {/* ─── Product Carousel #2 (After Banner 1) ───────────────────────── */}
-      <ProductCarouselSection
-        title={`${cat2.name} Collection`}
-        subtitle="Premium unstitched & designer wear"
-        categorySlug={cat2.slug}
-        products={section2Products}
-        autoPlayInterval={4000}
-      />
+      {section2Products.length > 0 && (
+        <ProductCarouselSection
+          title="Maxi 3-Piece Suit"
+          categorySlug={section2Products[0]?.categorySlug || 'all'}
+          products={section2Products}
+          autoPlayInterval={4000}
+        />
+      )}
 
       {/* ─── Banner 2 (8.png) ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
@@ -87,13 +83,14 @@ export default async function HomePage() {
       </section>
 
       {/* ─── Product Carousel #3 (After Banner 2) ───────────────────────── */}
-      <ProductCarouselSection
-        title={`${cat3.name} Collection`}
-        subtitle="Exclusive signature items & luxury arrivals"
-        categorySlug={cat3.slug}
-        products={section3Products}
-        autoPlayInterval={4500}
-      />
+      {section3Products.length > 0 && (
+        <ProductCarouselSection
+          title="Luxury Dress Collection"
+          categorySlug={section3Products[0]?.categorySlug || 'all'}
+          products={section3Products}
+          autoPlayInterval={4500}
+        />
+      )}
 
       {/* ─── Banner 3 (9.png) ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
@@ -110,38 +107,9 @@ export default async function HomePage() {
         </Link>
       </section>
 
-      {/* ─── Product Carousel #4 (After Banner 3) ───────────────────────── */}
-      <ProductCarouselSection
-        title="Trending Festive Wear"
-        subtitle="Handcrafted couture & embroidered masterpieces"
-        categorySlug="all"
-        products={section4Products}
-        autoPlayInterval={3800}
-      />
+      {/* ─── Video Campaigns Infinite Carousel (Hover Blur Focus) ─────────── */}
+      <HomeVideoSection />
 
-      {/* ─── Banner 4 (10.png) ───────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
-        <Link href="/products" className="relative block w-full bg-white border border-neutral-200 overflow-hidden rounded-[4px] shadow-sm hover:shadow-md transition-shadow">
-          <div className="relative w-full h-[220px] sm:h-[360px] md:h-[460px] lg:h-[520px]">
-            <Image
-              src="/10.png"
-              alt="Couture Series - 10"
-              fill
-              sizes="(max-width: 1280px) 100vw, 1280px"
-              className="object-cover object-center hover:scale-102 transition-transform duration-700 rounded-[4px]"
-            />
-          </div>
-        </Link>
-      </section>
-
-      {/* ─── Product Carousel #5 (After Banner 4) ───────────────────────── */}
-      <ProductCarouselSection
-        title="Luxury Signature Editions"
-        subtitle="Premium new releases & seasonal highlights"
-        categorySlug="all"
-        products={section5Products}
-        autoPlayInterval={4200}
-      />
 
       {/* ─── Highlights / Features grid ──────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
