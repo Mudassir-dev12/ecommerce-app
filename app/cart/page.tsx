@@ -31,7 +31,7 @@ export default function CartPage() {
   }, [cart]);
 
   const shipping = subtotal > 0 ? 300 : 0; // Fixed COD Delivery Charge ($300)
-  const tax = subtotal * 0.09; // flat 9% simulated tax rate
+  const tax = 0; // Tax deduction removed
   const total = Math.max(subtotal + shipping + tax, 0);
 
   if (showSkeleton) {
@@ -136,10 +136,6 @@ export default function CartPage() {
                 </span>
               </div>
 
-              <div className="flex justify-between text-sm text-neutral-600">
-                <span>Estimated Tax (9%)</span>
-                <span className="font-semibold text-neutral-800">{formatPrice(tax)}</span>
-              </div>
             </div>
 
             {/* Total */}

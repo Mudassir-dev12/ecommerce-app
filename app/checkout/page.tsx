@@ -59,7 +59,7 @@ export default function CheckoutPage() {
   }, [promoCode, subtotal]);
 
   const shipping = 300; // Fixed COD Delivery Charge ($300)
-  const tax = subtotal * 0.09;
+  const tax = 0; // Tax deduction removed
   const total = Math.max(subtotal - discountAmount + shipping + tax, 0);
 
   const handleShippingSubmit = (data: ShippingFormData) => {
@@ -281,10 +281,7 @@ export default function CheckoutPage() {
                 <span>COD Delivery Charge</span>
                 <span className="font-semibold text-neutral-900">{formatPrice(shipping)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Tax</span>
-                <span>{formatPrice(tax)}</span>
-              </div>
+
               <div className="border-t border-neutral-100 pt-2 flex justify-between font-extrabold text-sm text-neutral-900">
                 <span>Total</span>
                 <span>{formatPrice(total)}</span>

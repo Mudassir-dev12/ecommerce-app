@@ -114,10 +114,7 @@ export function OrderReview({
           <span>COD Delivery Charge</span>
           <span className="font-semibold text-neutral-900">{formatPrice(totals.shipping)}</span>
         </div>
-        <div className="flex justify-between text-sm text-neutral-600">
-          <span>Tax</span>
-          <span>{formatPrice(totals.tax)}</span>
-        </div>
+
         <div className="border-t border-neutral-200 pt-3 flex justify-between font-extrabold text-neutral-900 text-lg">
           <span>Grand Total</span>
           <span>{formatPrice(totals.total)}</span>
