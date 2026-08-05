@@ -174,7 +174,7 @@ export function ProductGallery({
               className={cn(
                 'relative aspect-[3/4] h-20 sm:h-24 overflow-hidden rounded-xl border-2 transition-all shrink-0 hover:opacity-95',
                 safeIndex === idx
-                  ? 'border-[#B57A20] scale-[1.03] shadow-md ring-1 ring-[#B57A20]'
+                  ? 'border-[#131213] scale-[1.03] shadow-md ring-1 ring-[#131213]'
                   : 'border-neutral-200 opacity-70'
               )}
             >

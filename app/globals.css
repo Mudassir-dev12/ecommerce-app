@@ -32,11 +32,30 @@ video,
 }
 
 /* Soft subtle borders site-wide */
-.border,
-.border-neutral-200,
-.border-neutral-100 {
-  border-color: rgba(229, 231, 235, 0.4) !important;
+.border {
+  border-color: #dfbe9f;
 }
+.border-neutral-200 {
+  border-color: #dfbe9f;
+}
+.border-neutral-100 {
+  border-color: #f5dec9;
+}
+
+/* Base Form Element Outline Definitions for Crisp Visibility */
+input, select, textarea {
+  border-width: 1px;
+  border-style: solid;
+  border-color: #dfbe9f;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #131213;
+  box-shadow: 0 0 0 2px rgba(19, 18, 19, 0.15);
+  outline: none;
+}
+
 
 /* Custom transitions and luxury features */
 .transition-card {
@@ -145,6 +164,6 @@ video,
 .checkout-page .border-neutral-200 {
   border-style: solid !important;
   border-width: 1px !important;
-  border-color: #d1d5db !important; /* crisp light grey solid border for inputs & structures */
+  border-color: #dfbe9f !important; /* crisp light warm solid border for inputs & structures */
 }
 

@@ -47,6 +47,8 @@ const COLOR_HEX_MAP: Record<string, string> = {
 };
 
 function getColorHex(value?: string, label?: string): string {
+  if (value && value.startsWith('#')) return value;
+
   const labelKey = (label || '').toLowerCase().trim();
   const valueKey = (value || '').toLowerCase().trim();
 
@@ -55,12 +57,7 @@ function getColorHex(value?: string, label?: string): string {
     if (labelKey && labelKey.includes(name)) return hex;
   }
 
-  // 2. Check value if it's a specific hex code distinct from generic fallback
-  if (value && (value.startsWith('#') || value.startsWith('rgb')) && value.toUpperCase() !== '#9E7B9B') {
-    return value;
-  }
-
-  // 3. Match value string against dictionary
+  // 2. Match value string against dictionary
   for (const [name, hex] of Object.entries(COLOR_HEX_MAP)) {
     if (valueKey && valueKey.includes(name)) return hex;
   }
@@ -212,6 +209,13 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
                   onClick={() => {
                     setSelectedColorId(col.id);
                     setSelectedColor(col.value);
+                    if (col.imageUrl) {
+                      const imgIdx = product.images.findIndex((img) => img.url === col.imageUrl);
+                      if (imgIdx !== -1) {
+                        onColorSelect?.(imgIdx);
+                        return;
+                      }
+                    }
                     onColorSelect?.(colIdx);
                   }}
                   className={cn(
@@ -226,7 +230,7 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
                     className={cn(
                       'h-5 w-5 rounded-full shrink-0 shadow-sm transition-transform group-hover:scale-110',
                       isWhite && 'border border-neutral-300',
-                      isSelected ? 'ring-2 ring-offset-2 ring-[#B57A20] scale-105' : 'ring-0'
+                      isSelected ? 'ring-2 ring-offset-2 ring-[#131213] scale-105' : 'ring-0'
                     )}
                     style={{ backgroundColor: colorHex }}
                   />
@@ -256,7 +260,7 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
                   className={cn(
                     'flex h-10 min-w-10 items-center justify-center rounded-lg border text-sm font-bold transition-all px-3.5 focus:outline-none disabled:opacity-30 disabled:pointer-events-none active:scale-95',
                     isSelected
-                      ? 'border-[#B57A20] bg-white text-[#B57A20] shadow-sm'
+                      ? 'border-[#131213] bg-white text-[#131213] shadow-sm'
                       : 'border-neutral-200 bg-white hover:border-neutral-400 text-neutral-700'
                   )}
                 >
@@ -315,9 +319,9 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
           type="button"
           onClick={handleAddToCart}
           disabled={!isAvailable}
-          className="w-full h-14 sm:h-15 rounded-full border-2 border-[#B57A20] bg-white hover:bg-amber-50/50 text-[#B57A20] font-extrabold text-base sm:text-lg flex items-center justify-center gap-3 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-14 sm:h-15 rounded-full border-2 border-[#131213] bg-white hover:bg-neutral-50 text-[#131213] font-extrabold text-base sm:text-lg flex items-center justify-center gap-3 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <ShoppingBag className="h-5 w-5 text-[#B57A20]" />
+          <ShoppingBag className="h-5 w-5" />
           <span>{isAvailable ? 'Add to Cart' : 'Out of Stock'}</span>
         </button>
 

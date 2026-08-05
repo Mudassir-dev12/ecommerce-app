@@ -196,6 +196,7 @@ export default function AdminDashboardPage() {
     isFeatured: false,
     isBestSeller: false,
     isNew: false,
+    colors: [] as Array<{ id: string; label: string; value: string; imageUrl: string }>,
   });
 
   const [newUrlInput, setNewUrlInput] = useState('');
@@ -306,6 +307,28 @@ export default function AdminDashboardPage() {
   const handleOpenAddModal = () => {
     setEditingProduct(null);
     setNewUrlInput('');
+    const defaultColors = 'Mauve, Dusty Rose, Plum, Champagne Gold, Emerald Green, Royal Navy'
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean)
+      .map((label, idx) => {
+        const COLOR_MAP: Record<string, string> = {
+          mauve: '#9E7B9B',
+          'dusty rose': '#DCAE96',
+          plum: '#4A2E35',
+          'champagne gold': '#D4AF37',
+          'emerald green': '#2E5A44',
+          'royal navy': '#1B2A4A',
+        };
+        const key = label.toLowerCase();
+        return {
+          id: `var-col-${Date.now()}-${idx}`,
+          label: label,
+          value: COLOR_MAP[key] || '#9E7B9B',
+          imageUrl: '',
+        };
+      });
+
     setFormData({
       name: '',
       brand: '',
@@ -323,6 +346,7 @@ export default function AdminDashboardPage() {
       isFeatured: false,
       isBestSeller: false,
       isNew: true,
+      colors: defaultColors,
     });
     setIsModalOpen(true);
   };
@@ -333,6 +357,13 @@ export default function AdminDashboardPage() {
     const existingUrls = product.images?.map((img) => img.url).filter(Boolean) || [];
     const colorVars = product.variants?.filter((v) => v.type === 'color').map((v) => v.label).join(', ') || '';
     const sizeVars = product.variants?.filter((v) => v.type === 'size').map((v) => v.value).join(', ') || '';
+
+    const colors = product.variants?.filter((v) => v.type === 'color').map((v) => ({
+      id: v.id || `var-col-${Date.now()}-${Math.random()}`,
+      label: v.label,
+      value: v.value,
+      imageUrl: v.imageUrl || '',
+    })) || [];
 
     setFormData({
       name: product.name,
@@ -351,8 +382,45 @@ export default function AdminDashboardPage() {
       isFeatured: product.isFeatured || false,
       isBestSeller: product.isBestSeller || false,
       isNew: product.isNew || false,
+      colors: colors,
     });
     setIsModalOpen(true);
+  };
+
+  const handleAddColorAttribute = () => {
+    setFormData((prev) => ({
+      ...prev,
+      colors: [
+        ...prev.colors,
+        {
+          id: `var-col-${Date.now()}-${prev.colors.length}`,
+          label: '',
+          value: '#B57A20',
+          imageUrl: '',
+        },
+      ],
+    }));
+  };
+
+  const handleRemoveColorAttribute = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      colors: prev.colors.filter((_, idx) => idx !== index),
+    }));
+  };
+
+  const handleColorAttributeChange = (index: number, field: 'label' | 'value' | 'imageUrl', val: string) => {
+    setFormData((prev) => {
+      const updated = [...prev.colors];
+      updated[index] = {
+        ...updated[index],
+        [field]: val,
+      };
+      return {
+        ...prev,
+        colors: updated,
+      };
+    });
   };
 
   const handleSaveProduct = async (e: React.FormEvent) => {
@@ -372,44 +440,16 @@ export default function AdminDashboardPage() {
         : [defaultImgUrl];
       const stockCountNum = parseInt(formData.stockCount, 10) || 0;
 
-      // Color palette mapping
-      const COLOR_MAP: Record<string, string> = {
-        mauve: '#9E7B9B',
-        'dusty rose': '#DCAE96',
-        plum: '#4A2E35',
-        'deep violet': '#4A2E35',
-        champagne: '#D4AF37',
-        'champagne gold': '#D4AF37',
-        gold: '#D4AF37',
-        emerald: '#2E5A44',
-        'emerald green': '#2E5A44',
-        navy: '#1B2A4A',
-        'navy blue': '#1B2A4A',
-        'royal navy': '#1B2A4A',
-        black: '#000000',
-        white: '#FFFFFF',
-        red: '#DC2626',
-        blue: '#2563EB',
-        green: '#16A34A',
-        pink: '#EC4899',
-        purple: '#9333EA',
-      };
-
-      const parsedColors = formData.colorVariantsInput
-        .split(',')
-        .map((c) => c.trim())
-        .filter(Boolean)
-        .map((label, idx) => {
-          const key = label.toLowerCase();
-          const hex = COLOR_MAP[key] || '#9E7B9B';
-          return {
-            id: `var-col-${Date.now()}-${idx}`,
-            type: 'color' as const,
-            value: hex,
-            label: label,
-            inStock: true,
-          };
-        });
+      const parsedColors = (formData.colors || [])
+        .filter((c) => c.label.trim())
+        .map((color, idx) => ({
+          id: color.id && color.id.startsWith('var-col-') ? color.id : `var-col-${Date.now()}-${idx}`,
+          type: 'color' as const,
+          value: color.value || '#B57A20',
+          label: color.label.trim(),
+          inStock: true,
+          imageUrl: color.imageUrl || '',
+        }));
 
       const parsedSizes = formData.sizeVariantsInput
         .split(',')
@@ -438,6 +478,7 @@ export default function AdminDashboardPage() {
         isBestSeller: formData.isBestSeller,
         isNew: formData.isNew,
         description: formData.description,
+        longDescription: formData.description,
         sku: formData.sku,
         variants: variants,
         images: finalUrls.map((url, idx) => ({
@@ -1473,21 +1514,107 @@ export default function AdminDashboardPage() {
                   )}
                 </div>
 
-                {/* Color Variants */}
-                <div>
-                  <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider mb-1">
-                    Color Attributes (Comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Mauve, Dusty Rose, Plum, Champagne Gold, Emerald Green, Royal Navy"
-                    value={formData.colorVariantsInput}
-                    onChange={(e) => setFormData({ ...formData, colorVariantsInput: e.target.value })}
-                    className="w-full px-3.5 py-2 bg-[#FAF6F0] border border-[#e7dccb] rounded-xl text-sm text-[#131213] focus:outline-none focus:border-[#B57A20]"
-                  />
-                  <span className="text-[10px] text-neutral-400 mt-0.5 block">
-                    Colors enable selection swatches for customers.
-                  </span>
+                {/* Color Attributes Builder */}
+                <div className="md:col-span-2 space-y-3 bg-[#FAF6F0]/40 border border-[#e7dccb] rounded-2xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                        Color Attributes (Visual Swatches)
+                      </label>
+                      <span className="text-[10px] text-neutral-400 mt-0.5 block">
+                        Add colors, set their hex values, and link them to product pictures.
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddColorAttribute}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#B57A20] hover:bg-[#8e5c12] text-white rounded-xl text-xs font-bold shadow-sm transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Color Option</span>
+                    </button>
+                  </div>
+
+                  {formData.colors && formData.colors.length > 0 ? (
+                    <div className="space-y-3 pt-1">
+                      {formData.colors.map((color, idx) => (
+                        <div
+                          key={color.id || idx}
+                          className="flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-white border border-[#e7dccb] p-3.5 rounded-xl shadow-sm hover:border-[#B57A20]/45 transition-colors"
+                        >
+                          {/* Color Swatch Picker */}
+                          <div className="flex items-center gap-2.5 min-w-[130px]">
+                            <div className="relative w-8 h-8 rounded-full border border-neutral-350 shadow-inner shrink-0 overflow-hidden" style={{ backgroundColor: color.value || '#000000' }}>
+                              <input
+                                type="color"
+                                value={color.value || '#000000'}
+                                onChange={(e) => handleColorAttributeChange(idx, 'value', e.target.value)}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer scale-150"
+                              />
+                            </div>
+                            <input
+                              type="text"
+                              required
+                              placeholder="#000000"
+                              value={color.value}
+                              onChange={(e) => handleColorAttributeChange(idx, 'value', e.target.value)}
+                              className="w-20 px-2 py-1 bg-[#FAF6F0] border border-[#e7dccb] rounded-lg text-xs font-mono text-[#131213] focus:outline-none focus:border-[#B57A20]"
+                            />
+                          </div>
+
+                          {/* Color Name Input */}
+                          <div className="flex-1">
+                            <input
+                              type="text"
+                              required
+                              placeholder="Color Name (e.g. Mauve)"
+                              value={color.label}
+                              onChange={(e) => handleColorAttributeChange(idx, 'label', e.target.value)}
+                              className="w-full px-3 py-1.5 bg-[#FAF6F0] border border-[#e7dccb] rounded-lg text-xs text-[#131213] focus:outline-none focus:border-[#B57A20] font-semibold"
+                            />
+                          </div>
+
+                          {/* Image Association dropdown */}
+                          <div className="flex-1 flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-neutral-400 uppercase shrink-0">Pic:</span>
+                            <select
+                              value={color.imageUrl}
+                              onChange={(e) => handleColorAttributeChange(idx, 'imageUrl', e.target.value)}
+                              className="flex-1 min-w-0 px-2.5 py-1.5 bg-[#FAF6F0] border border-[#e7dccb] rounded-lg text-xs text-[#131213] focus:outline-none focus:border-[#B57A20] font-medium truncate"
+                            >
+                              <option value="">-- Select Picture --</option>
+                              {formData.imageUrls.map((url, imgIdx) => (
+                                <option key={imgIdx} value={url}>
+                                  Image {imgIdx + 1}
+                                </option>
+                              ))}
+                            </select>
+                            {color.imageUrl && (
+                              <img
+                                src={color.imageUrl}
+                                alt="preview"
+                                className="w-8 h-8 object-cover rounded-lg border border-[#e7dccb] shrink-0 bg-neutral-50 p-0.5"
+                              />
+                            )}
+                          </div>
+
+                          {/* Delete button */}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveColorAttribute(idx)}
+                            className="p-2 text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-250 transition-colors self-end md:self-auto shrink-0"
+                            title="Remove color attribute"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center p-6 border-2 border-dashed border-[#e7dccb] rounded-xl bg-white text-neutral-400 italic text-xs">
+                      No color swatches configured yet. Click "Add Color Option" to create attributes.
+                    </div>
+                  )}
                 </div>
 
                 {/* Size Variants */}

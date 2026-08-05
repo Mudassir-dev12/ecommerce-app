@@ -77,6 +77,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
 
   // Image calculations
   const primaryImage = product.images.find((i) => i.isPrimary) || product.images[0];
+  const hoverImage = product.images.length > 1 ? product.images[1] : null;
 
   if (layout === 'list') {
     return (
@@ -106,10 +107,23 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
             sizes="(max-w-640px) 100vw, 160px"
             priority={product.isFeatured}
             className={cn(
-              'object-cover object-top group-hover:scale-105 transition-transform duration-500 rounded-lg',
+              'object-cover object-top transition-opacity duration-500 rounded-lg',
+              hoverImage ? 'group-hover:opacity-0' : '',
               !isAvailable && 'opacity-60 grayscale-[20%]'
             )}
           />
+          {hoverImage && (
+            <Image
+              src={hoverImage.url}
+              alt={hoverImage.alt || product.name}
+              fill
+              sizes="(max-w-640px) 100vw, 160px"
+              className={cn(
+                'object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg',
+                !isAvailable && 'grayscale-[20%]'
+              )}
+            />
+          )}
           {!isAvailable ? (
             <span className="absolute left-3 top-3 z-10 rounded-md bg-rose-600 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white shadow-md">
               SOLD OUT
@@ -215,10 +229,23 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
             sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 300px"
             priority={product.isFeatured}
             className={cn(
-              'object-cover object-top group-hover:scale-105 transition-transform duration-500 rounded-lg',
+              'object-cover object-top transition-opacity duration-500 rounded-lg',
+              hoverImage ? 'group-hover:opacity-0' : '',
               !isAvailable && 'opacity-60 grayscale-[20%]'
             )}
           />
+          {hoverImage && (
+            <Image
+              src={hoverImage.url}
+              alt={hoverImage.alt || product.name}
+              fill
+              sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 300px"
+              className={cn(
+                'object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg',
+                !isAvailable && 'grayscale-[20%]'
+              )}
+            />
+          )}
           {!isAvailable ? (
             <span className="absolute left-2.5 top-2.5 z-10 rounded-md bg-rose-600 px-2.5 py-1 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-white shadow-md">
               SOLD OUT
@@ -279,7 +306,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
             </button>
           ) : hasVariants ? (
             <Link href={`/products/${product.slug}`}>
-              <button className="h-8 sm:h-8.5 px-3.5 text-xs font-extrabold rounded-full border border-[#B57A20]/60 text-[#B57A20] hover:bg-[#FAF6F0] transition-all">
+              <button className="h-8 sm:h-8.5 px-3.5 text-xs font-extrabold rounded-full border border-[#131213] text-[#131213] hover:bg-neutral-50 transition-all">
                 Options
               </button>
             </Link>

@@ -7,6 +7,7 @@ export interface ProductVariant {
   label: string;
   inStock: boolean;
   priceModifier?: number; // added to base price
+  imageUrl?: string;      // selected image URL associated with this variant
 }
 
 export interface ProductImage {

@@ -14,7 +14,7 @@ export function ShareButton() {
   return (
     <button
       onClick={handleShare}
-      className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-neutral-200 text-neutral-700 hover:border-[#B57A20] hover:text-[#B57A20] shadow-sm transition-colors"
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-neutral-200 text-neutral-700 hover:border-[#131213] hover:text-[#131213] shadow-sm transition-colors"
       aria-label="Share article"
     >
       <Share2 className="h-4 w-4" />

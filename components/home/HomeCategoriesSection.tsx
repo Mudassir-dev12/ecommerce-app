@@ -44,7 +44,7 @@ export function HomeCategoriesSection({ categories }: HomeCategoriesSectionProps
             href={`/products?category=${cat.slug}`}
             className="group flex flex-col items-center shrink-0 cursor-pointer hover-lift"
           >
-            <div className="relative h-20 w-20 sm:h-28 sm:w-28 rounded-full border-2 border-[#e7dccb] p-1 bg-white shadow-md group-hover:scale-105 group-hover:border-[#B57A20] transition-all duration-300">
+            <div className="relative h-20 w-20 sm:h-28 sm:w-28 rounded-full border-2 border-[#e7dccb] p-1 bg-white shadow-md group-hover:scale-105 group-hover:border-[#131213] transition-all duration-300">
               <div className="relative h-full w-full rounded-full overflow-hidden">
                 <Image
                   src={cat.image}
@@ -55,7 +55,7 @@ export function HomeCategoriesSection({ categories }: HomeCategoriesSectionProps
                 />
               </div>
             </div>
-            <span className="mt-3 text-xs sm:text-sm font-extrabold tracking-widest text-[#131213] uppercase group-hover:text-[#B57A20] transition-colors text-center whitespace-nowrap">
+            <span className="mt-3 text-xs sm:text-sm font-extrabold tracking-widest text-[#131213] uppercase group-hover:text-[#131213] transition-colors text-center whitespace-nowrap">
               {cat.name}
             </span>
           </Link>
