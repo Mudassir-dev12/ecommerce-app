@@ -19,8 +19,8 @@ interface BannerSlide {
 const BANNERS: BannerSlide[] = [
   {
     id: 1,
-    desktopImage: '/b1.png',
-    mobileImage: '/b1.1.png',
+    desktopImage: '/b1.webp',
+    mobileImage: '/b1.1.webp',
     subtitle: 'Grace, Handcrafted.',
     title: 'Womens Arrival',
     highlight: 'Collection ’26',
@@ -29,8 +29,8 @@ const BANNERS: BannerSlide[] = [
   },
   {
     id: 2,
-    desktopImage: '/b2.png',
-    mobileImage: '/b2.1.png',
+    desktopImage: '/b2.webp',
+    mobileImage: '/b2.1.webp',
     subtitle: 'Timeless Luxury & Style',
     title: 'Unstitched Festive',
     highlight: 'Luxury Edition',
@@ -39,8 +39,8 @@ const BANNERS: BannerSlide[] = [
   },
   {
     id: 3,
-    desktopImage: '/b3.png',
-    mobileImage: '/b3.1.png',
+    desktopImage: '/b3.webp',
+    mobileImage: '/b3.1.webp',
     subtitle: 'Pure Silk & Premium Lawn',
     title: 'Embroidered Pret',
     highlight: 'Couture Series',

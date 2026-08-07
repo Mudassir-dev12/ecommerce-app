@@ -41,12 +41,12 @@ export default async function HomePage() {
         />
       )}
 
-      {/* ─── Banner 1 (7.png) ───────────────────────────────────────────── */}
+      {/* ─── Banner 1 (7.webp) ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
         <Link href="/products" className="relative block w-full bg-white border border-neutral-200 overflow-hidden rounded-[4px] shadow-sm hover:shadow-md transition-shadow">
           <div className="relative w-full h-[220px] sm:h-[360px] md:h-[460px] lg:h-[520px]">
             <Image
-              src="/7.png"
+              src="/7.webp"
               alt="Luxury Edition - 7"
               fill
               sizes="(max-width: 1280px) 100vw, 1280px"
@@ -67,12 +67,12 @@ export default async function HomePage() {
         />
       )}
 
-      {/* ─── Banner 2 (8.png) ───────────────────────────────────────────── */}
+      {/* ─── Banner 2 (8.webp) ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
         <Link href="/products" className="relative block w-full bg-white border border-neutral-200 overflow-hidden rounded-[4px] shadow-sm hover:shadow-md transition-shadow">
           <div className="relative w-full h-[220px] sm:h-[360px] md:h-[460px] lg:h-[520px]">
             <Image
-              src="/8.png"
+              src="/8.webp"
               alt="Luxury Collection - 8"
               fill
               sizes="(max-width: 1280px) 100vw, 1280px"
@@ -92,12 +92,12 @@ export default async function HomePage() {
         />
       )}
 
-      {/* ─── Banner 3 (9.png) ───────────────────────────────────────────── */}
+      {/* ─── Banner 3 (9.webp) ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in-up">
         <Link href="/products" className="relative block w-full bg-white border border-neutral-200 overflow-hidden rounded-[4px] shadow-sm hover:shadow-md transition-shadow">
           <div className="relative w-full h-[220px] sm:h-[360px] md:h-[460px] lg:h-[520px]">
             <Image
-              src="/9.png"
+              src="/9.webp"
               alt="Luxury Arrival - 9"
               fill
               sizes="(max-width: 1280px) 100vw, 1280px"

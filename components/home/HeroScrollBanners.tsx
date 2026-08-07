@@ -6,20 +6,20 @@ import Image from 'next/image';
 const BANNERS = [
   {
     id: 1,
-    desktopImage: '/b1.png',
-    mobileImage: '/b1.1.png',
+    desktopImage: '/b1.webp',
+    mobileImage: '/b1.1.webp',
     alt: 'Modern Traders Fashion Banner 1',
   },
   {
     id: 2,
-    desktopImage: '/b2.png',
-    mobileImage: '/b2.1.png',
+    desktopImage: '/b2.webp',
+    mobileImage: '/b2.1.webp',
     alt: 'Modern Traders Fashion Banner 2',
   },
   {
     id: 3,
-    desktopImage: '/b3.png',
-    mobileImage: '/b3.1.png',
+    desktopImage: '/b3.webp',
+    mobileImage: '/b3.1.webp',
     alt: 'Modern Traders Fashion Banner 3',
   },
 ];
@@ -42,7 +42,7 @@ export function HeroScrollBanners() {
           >
             {/* Full-Bleed Hero Banner */}
             <div className="relative w-full h-full rounded-none overflow-hidden">
-              {/* Desktop Banner Image (b1.png, b2.png, b3.png for md+ screens) */}
+              {/* Desktop Banner Image (b1.webp, b2.webp, b3.webp for md+ screens) */}
               <Image
                 src={banner.desktopImage}
                 alt={banner.alt}
@@ -52,7 +52,7 @@ export function HeroScrollBanners() {
                 className="hidden md:block object-cover object-center rounded-none"
               />
 
-              {/* Mobile Banner Image (b1.1.png, b2.1.png, b3.1.png for mobile screens) */}
+              {/* Mobile Banner Image (b1.1.webp, b2.1.webp, b3.1.webp for mobile screens) */}
               <Image
                 src={banner.mobileImage}
                 alt={`${banner.alt} Mobile`}
