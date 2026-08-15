@@ -252,8 +252,8 @@ export default function AdminDashboardPage() {
         showToast(`"${file.name}" is not a valid image file`, 'error');
         return;
       }
-      if (file.size > 5 * 1024 * 1024) {
-        showToast(`"${file.name}" exceeds 5MB limit`, 'error');
+      if (file.size > 10 * 1024 * 1024) {
+        showToast(`"${file.name}" exceeds 10MB limit`, 'error');
         return;
       }
     }
@@ -311,23 +311,12 @@ export default function AdminDashboardPage() {
       .split(',')
       .map((c) => c.trim())
       .filter(Boolean)
-      .map((label, idx) => {
-        const COLOR_MAP: Record<string, string> = {
-          mauve: '#9E7B9B',
-          'dusty rose': '#DCAE96',
-          plum: '#4A2E35',
-          'champagne gold': '#D4AF37',
-          'emerald green': '#2E5A44',
-          'royal navy': '#1B2A4A',
-        };
-        const key = label.toLowerCase();
-        return {
-          id: `var-col-${Date.now()}-${idx}`,
-          label: label,
-          value: COLOR_MAP[key] || '#9E7B9B',
-          imageUrl: '',
-        };
-      });
+      .map((label, idx) => ({
+        id: `var-col-${Date.now()}-${idx}`,
+        label: label,
+        value: label,
+        imageUrl: '',
+      }));
 
     setFormData({
       name: '',
@@ -395,7 +384,7 @@ export default function AdminDashboardPage() {
         {
           id: `var-col-${Date.now()}-${prev.colors.length}`,
           label: '',
-          value: '#B57A20',
+          value: '',
           imageUrl: '',
         },
       ],
@@ -445,7 +434,7 @@ export default function AdminDashboardPage() {
         .map((color, idx) => ({
           id: color.id && color.id.startsWith('var-col-') ? color.id : `var-col-${Date.now()}-${idx}`,
           type: 'color' as const,
-          value: color.value || '#B57A20',
+          value: color.label.trim(),
           label: color.label.trim(),
           inStock: true,
           imageUrl: color.imageUrl || '',
@@ -1514,15 +1503,15 @@ export default function AdminDashboardPage() {
                   )}
                 </div>
 
-                {/* Color Attributes Builder */}
+                {/* Color Options Builder */}
                 <div className="md:col-span-2 space-y-3 bg-[#FAF6F0]/40 border border-[#e7dccb] rounded-2xl p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider">
-                        Color Attributes (Visual Swatches)
+                        Color Options (Color Names)
                       </label>
                       <span className="text-[10px] text-neutral-400 mt-0.5 block">
-                        Add colors, set their hex values, and link them to product pictures.
+                        Add available color names for customer selection.
                       </span>
                     </div>
                     <button
@@ -1540,70 +1529,29 @@ export default function AdminDashboardPage() {
                       {formData.colors.map((color, idx) => (
                         <div
                           key={color.id || idx}
-                          className="flex flex-col md:flex-row items-stretch md:items-center gap-3 bg-white border border-[#e7dccb] p-3.5 rounded-xl shadow-sm hover:border-[#B57A20]/45 transition-colors"
+                          className="flex items-center gap-3 bg-white border border-[#e7dccb] p-3.5 rounded-xl shadow-sm hover:border-[#B57A20]/45 transition-colors"
                         >
-                          {/* Color Swatch Picker */}
-                          <div className="flex items-center gap-2.5 min-w-[130px]">
-                            <div className="relative w-8 h-8 rounded-full border border-neutral-350 shadow-inner shrink-0 overflow-hidden" style={{ backgroundColor: color.value || '#000000' }}>
-                              <input
-                                type="color"
-                                value={color.value || '#000000'}
-                                onChange={(e) => handleColorAttributeChange(idx, 'value', e.target.value)}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer scale-150"
-                              />
-                            </div>
-                            <input
-                              type="text"
-                              required
-                              placeholder="#000000"
-                              value={color.value}
-                              onChange={(e) => handleColorAttributeChange(idx, 'value', e.target.value)}
-                              className="w-20 px-2 py-1 bg-[#FAF6F0] border border-[#e7dccb] rounded-lg text-xs font-mono text-[#131213] focus:outline-none focus:border-[#B57A20]"
-                            />
-                          </div>
-
                           {/* Color Name Input */}
                           <div className="flex-1">
                             <input
                               type="text"
                               required
-                              placeholder="Color Name (e.g. Mauve)"
+                              placeholder="Color Name (e.g. Mauve, Dusty Rose, White, Black)"
                               value={color.label}
-                              onChange={(e) => handleColorAttributeChange(idx, 'label', e.target.value)}
+                              onChange={(e) => {
+                                handleColorAttributeChange(idx, 'label', e.target.value);
+                                handleColorAttributeChange(idx, 'value', e.target.value);
+                              }}
                               className="w-full px-3 py-1.5 bg-[#FAF6F0] border border-[#e7dccb] rounded-lg text-xs text-[#131213] focus:outline-none focus:border-[#B57A20] font-semibold"
                             />
-                          </div>
-
-                          {/* Image Association dropdown */}
-                          <div className="flex-1 flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-neutral-400 uppercase shrink-0">Pic:</span>
-                            <select
-                              value={color.imageUrl}
-                              onChange={(e) => handleColorAttributeChange(idx, 'imageUrl', e.target.value)}
-                              className="flex-1 min-w-0 px-2.5 py-1.5 bg-[#FAF6F0] border border-[#e7dccb] rounded-lg text-xs text-[#131213] focus:outline-none focus:border-[#B57A20] font-medium truncate"
-                            >
-                              <option value="">-- Select Picture --</option>
-                              {formData.imageUrls.map((url, imgIdx) => (
-                                <option key={imgIdx} value={url}>
-                                  Image {imgIdx + 1}
-                                </option>
-                              ))}
-                            </select>
-                            {color.imageUrl && (
-                              <img
-                                src={color.imageUrl}
-                                alt="preview"
-                                className="w-8 h-8 object-cover rounded-lg border border-[#e7dccb] shrink-0 bg-neutral-50 p-0.5"
-                              />
-                            )}
                           </div>
 
                           {/* Delete button */}
                           <button
                             type="button"
                             onClick={() => handleRemoveColorAttribute(idx)}
-                            className="p-2 text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-250 transition-colors self-end md:self-auto shrink-0"
-                            title="Remove color attribute"
+                            className="p-2 text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-250 transition-colors shrink-0"
+                            title="Remove color option"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1612,7 +1560,7 @@ export default function AdminDashboardPage() {
                     </div>
                   ) : (
                     <div className="text-center p-6 border-2 border-dashed border-[#e7dccb] rounded-xl bg-white text-neutral-400 italic text-xs">
-                      No color swatches configured yet. Click "Add Color Option" to create attributes.
+                      No color options configured yet. Click "Add Color Option" to add color names.
                     </div>
                   )}
                 </div>

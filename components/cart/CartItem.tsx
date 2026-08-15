@@ -66,12 +66,8 @@ export function CartItem({ item }: CartItemProps) {
             {(item.selectedColor || item.selectedSize) && (
               <div className="flex flex-wrap gap-2 mt-1">
                 {item.selectedColor && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded">
-                    Color:
-                    <span
-                      className="h-2 w-2 rounded-full border border-neutral-300"
-                      style={{ backgroundColor: item.selectedColor }}
-                    />
+                  <span className="text-[11px] font-medium text-neutral-600 bg-neutral-100 px-2 py-0.5 rounded">
+                    Color: <span className="font-bold text-neutral-900">{item.selectedColor}</span>
                   </span>
                 )}
                 {item.selectedSize && (

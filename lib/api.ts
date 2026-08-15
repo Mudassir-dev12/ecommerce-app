@@ -737,12 +737,26 @@ export async function uploadProductImage(file: File): Promise<string> {
   const sanitizeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
   const fileName = `${Date.now()}_${sanitizeName}`;
 
+  let contentType = file.type;
+  if (!contentType || contentType === 'application/octet-stream') {
+    const lowerName = file.name.toLowerCase();
+    if (lowerName.endsWith('.mov')) contentType = 'video/quicktime';
+    else if (lowerName.endsWith('.mp4')) contentType = 'video/mp4';
+    else if (lowerName.endsWith('.webm')) contentType = 'video/webm';
+    else if (lowerName.endsWith('.m4v')) contentType = 'video/x-m4v';
+    else if (lowerName.endsWith('.avi')) contentType = 'video/x-msvideo';
+    else if (lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) contentType = 'image/jpeg';
+    else if (lowerName.endsWith('.png')) contentType = 'image/png';
+    else if (lowerName.endsWith('.webp')) contentType = 'image/webp';
+    else contentType = 'application/octet-stream';
+  }
+
   const { data, error } = await supabase.storage
     .from('images')
     .upload(fileName, file, {
       cacheControl: '3600',
       upsert: true,
-      contentType: file.type || 'image/png',
+      contentType: contentType,
     });
 
   if (error) {

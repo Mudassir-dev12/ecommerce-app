@@ -118,7 +118,7 @@ export function ProductGallery({
           </button>
         )}
 
-        {/* Zoomable Image frame — object-cover fills canvas edge-to-edge, anchored to top */}
+        {/* Zoomable Image frame */}
         <div
           className="relative h-full w-full cursor-zoom-in overflow-hidden"
           onMouseEnter={() => setIsZoomed(true)}
@@ -169,13 +169,13 @@ export function ProductGallery({
         <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
           {images.map((img, idx) => (
             <button
-              key={img.id}
+              key={img.id || idx}
               onClick={() => setActiveIndex(idx)}
               className={cn(
                 'relative aspect-[3/4] h-20 sm:h-24 overflow-hidden rounded-xl border-2 transition-all shrink-0 hover:opacity-95',
                 safeIndex === idx
-                  ? 'border-[#131213] scale-[1.03] shadow-md ring-1 ring-[#131213]'
-                  : 'border-neutral-200 opacity-70'
+                  ? 'border-[#B57A20] scale-[1.03] shadow-md ring-1 ring-[#B57A20]'
+                  : 'border-neutral-200 opacity-75'
               )}
             >
               <Image

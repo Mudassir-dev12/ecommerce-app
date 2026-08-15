@@ -16,55 +16,6 @@ export interface ProductClientDetailsProps {
   onColorSelect?: (imageIndex: number) => void;
 }
 
-// Complete real color hex map for precise swatch rendering
-const COLOR_HEX_MAP: Record<string, string> = {
-  black: '#111111',
-  white: '#FFFFFF',
-  skin: '#E5C3A6',
-  nude: '#E5C3A6',
-  purple: '#6A3273',
-  'purple grey': '#6A3273',
-  'purple gray': '#6A3273',
-  mauve: '#9E7B9B',
-  'pista green': '#9AB992',
-  pista: '#9AB992',
-  grey: '#78808A',
-  gray: '#78808A',
-  peach: '#F4A688',
-  'dusty rose': '#EBA99A',
-  plum: '#4A2E35',
-  golden: '#D4AF37',
-  gold: '#D4AF37',
-  'champagne gold': '#D4AF37',
-  'emerald green': '#2E5A44',
-  'royal navy': '#1B2A4A',
-  red: '#DC2626',
-  blue: '#2563EB',
-  green: '#16A34A',
-  yellow: '#EAB308',
-  pink: '#EC4899',
-  orange: '#F97316',
-};
-
-function getColorHex(value?: string, label?: string): string {
-  if (value && value.startsWith('#')) return value;
-
-  const labelKey = (label || '').toLowerCase().trim();
-  const valueKey = (value || '').toLowerCase().trim();
-
-  // 1. Match label against real color dictionary first to avoid generic defaults
-  for (const [name, hex] of Object.entries(COLOR_HEX_MAP)) {
-    if (labelKey && labelKey.includes(name)) return hex;
-  }
-
-  // 2. Match value string against dictionary
-  for (const [name, hex] of Object.entries(COLOR_HEX_MAP)) {
-    if (valueKey && valueKey.includes(name)) return hex;
-  }
-
-  return '#9AB992';
-}
-
 export function ProductClientDetails({ product, onColorSelect }: ProductClientDetailsProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -183,7 +134,7 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
         )}
       </div>
 
-      {/* ─── Color Variant Selection (Strict Single-Selection Ring Highlights) ─── */}
+      {/* ─── Color Variant Selection (Color Names Buttons) ─── */}
       {colorVariants.length > 0 && (
         <div className="space-y-3 bg-white border border-neutral-200 p-4 rounded-2xl shadow-sm">
           <div className="flex justify-between items-center text-sm font-semibold">
@@ -196,11 +147,9 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
             </span>
           </div>
           
-          <div className="flex flex-wrap items-center gap-4 pt-1">
+          <div className="flex flex-wrap items-center gap-2.5 pt-1">
             {colorVariants.map((col, colIdx) => {
               const isSelected = selectedColorId ? col.id === selectedColorId : colIdx === 0;
-              const colorHex = getColorHex(col.value, col.label);
-              const isWhite = colorHex.toUpperCase() === '#FFFFFF' || colorHex.toUpperCase() === '#FFF';
 
               return (
                 <button
@@ -208,33 +157,18 @@ export function ProductClientDetails({ product, onColorSelect }: ProductClientDe
                   type="button"
                   onClick={() => {
                     setSelectedColorId(col.id);
-                    setSelectedColor(col.value);
-                    if (col.imageUrl) {
-                      const imgIdx = product.images.findIndex((img) => img.url === col.imageUrl);
-                      if (imgIdx !== -1) {
-                        onColorSelect?.(imgIdx);
-                        return;
-                      }
-                    }
-                    onColorSelect?.(colIdx);
+                    setSelectedColor(col.value || col.label);
                   }}
                   className={cn(
-                    'group flex items-center gap-2 py-1 px-1.5 rounded-lg border-0 bg-transparent transition-all focus:outline-none active:scale-95 text-xs cursor-pointer',
-                    isSelected ? 'font-bold text-[#B57A20]' : 'font-medium text-neutral-700 hover:text-neutral-900'
+                    'flex h-10 items-center justify-center rounded-lg border text-sm font-bold transition-all px-4 focus:outline-none active:scale-95 cursor-pointer',
+                    isSelected
+                      ? 'border-[#B57A20] bg-[#FAF6F0] text-[#B57A20] shadow-sm ring-1 ring-[#B57A20]'
+                      : 'border-neutral-200 bg-white hover:border-neutral-400 text-neutral-700'
                   )}
                   title={col.label}
                   aria-label={col.label}
                 >
-                  {/* Swatch Circle showing exact real color, with selection ring ONLY on active selected item */}
-                  <span
-                    className={cn(
-                      'h-5 w-5 rounded-full shrink-0 shadow-sm transition-transform group-hover:scale-110',
-                      isWhite && 'border border-neutral-300',
-                      isSelected ? 'ring-2 ring-offset-2 ring-[#131213] scale-105' : 'ring-0'
-                    )}
-                    style={{ backgroundColor: colorHex }}
-                  />
-                  <span className="text-xs">{col.label}</span>
+                  <span>{col.label}</span>
                 </button>
               );
             })}

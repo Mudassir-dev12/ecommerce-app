@@ -15,6 +15,8 @@ export interface ProductImage {
   url: string;
   alt: string;
   isPrimary?: boolean;
+  isVideo?: boolean;
+  videoUrl?: string;
 }
 
 export interface Product {
