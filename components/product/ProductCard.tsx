@@ -57,12 +57,10 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
     }
 
     if (hasVariants) {
-      // Direct them to pick options
       toast(`This item has options. Please select variants on details page.`, 'info');
       return;
     }
 
-    // Default parameters if no variants
     addToCart({
       productId: product.id,
       slug: product.slug,
@@ -83,24 +81,24 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
 
   if (layout === 'list') {
     return (
-      <div className="group relative flex flex-col sm:flex-row gap-6 rounded-2xl border border-neutral-100 bg-white p-5 shadow-card hover:shadow-card-hover transition-card hover-lift animate-fade-in-up">
+      <div className="group relative flex flex-col sm:flex-row gap-0 rounded-2xl border border-neutral-200/80 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover-lift animate-fade-in-up">
         
-        {/* Wishlist toggle absolute */}
+        {/* Wishlist toggle */}
         <button
           onClick={handleWishlistClick}
           className={cn(
-            'absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-sm transition-all hover:scale-105 active:scale-95',
-            isWishlisted ? 'text-rose-500' : 'text-neutral-400 hover:text-neutral-600'
+            'absolute right-3 top-3 z-20 flex h-8.5 w-8.5 items-center justify-center rounded-full bg-white/90 shadow-sm border border-neutral-100/60 backdrop-blur-sm transition-transform hover:scale-110 active:scale-95 focus:outline-none',
+            isWishlisted ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'
           )}
           aria-label="Wishlist toggle"
         >
-          <Heart className="h-5 w-5" fill={isWishlisted ? 'currentColor' : 'none'} />
+          <Heart className="h-4 w-4" fill={isWishlisted ? 'currentColor' : 'none'} />
         </button>
 
-        {/* Thumbnail Box */}
+        {/* Flush Thumbnail Box */}
         <Link
           href={`/products/${product.slug}`}
-          className="relative aspect-square h-48 w-36 sm:w-40 shrink-0 overflow-hidden rounded-xl bg-neutral-50 p-1 flex items-center justify-center border border-neutral-100"
+          className="relative aspect-square h-48 w-full sm:w-48 shrink-0 overflow-hidden bg-neutral-100"
         >
           {primaryIsVid ? (
             <video
@@ -111,7 +109,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
               playsInline
               controls={false}
               className={cn(
-                'h-full w-full object-cover object-top select-none pointer-events-none rounded-lg',
+                'h-full w-full object-cover object-top select-none pointer-events-none',
                 !isAvailable && 'opacity-60 grayscale-[20%]'
               )}
             />
@@ -120,10 +118,10 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
               src={primaryImage?.url || ''}
               alt={primaryImage?.alt || product.name}
               fill
-              sizes="(max-w-640px) 100vw, 160px"
+              sizes="(max-w-640px) 100vw, 200px"
               priority={product.isFeatured}
               className={cn(
-                'object-cover object-top transition-opacity duration-500 rounded-lg',
+                'object-cover object-top transition-opacity duration-500',
                 hoverImage ? 'group-hover:opacity-0' : '',
                 !isAvailable && 'opacity-60 grayscale-[20%]'
               )}
@@ -139,7 +137,7 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
                 playsInline
                 controls={false}
                 className={cn(
-                  'h-full w-full object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg pointer-events-none',
+                  'h-full w-full object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 pointer-events-none',
                   !isAvailable && 'grayscale-[20%]'
                 )}
               />
@@ -148,9 +146,9 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
                 src={hoverImage.url}
                 alt={hoverImage.alt || product.name}
                 fill
-                sizes="(max-w-640px) 100vw, 160px"
+                sizes="(max-w-640px) 100vw, 200px"
                 className={cn(
-                  'object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg',
+                  'object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0',
                   !isAvailable && 'grayscale-[20%]'
                 )}
               />
@@ -164,66 +162,56 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
             <Badge variant="danger" className="absolute left-3 top-3">
               -{product.discount}%
             </Badge>
-          ) : product.isNew ? (
-            <Badge variant="primary" className="absolute left-3 top-3">
-              New
-            </Badge>
           ) : null}
         </Link>
 
-        {/* Product Meta */}
-        <div className="flex flex-col justify-between flex-1 gap-4">
-          <div className="space-y-1.5">
-            <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">{product.brand}</span>
+        {/* Padded Info Box */}
+        <div className="p-4 flex flex-col justify-between flex-1 gap-3 bg-white">
+          <div className="space-y-1">
+            <span className="text-xs font-medium text-slate-400 block">{product.category || product.brand}</span>
             <Link href={`/products/${product.slug}`} className="block">
-              <h3 className="text-lg font-bold text-neutral-900 group-hover:text-primary-600 transition-colors line-clamp-1">
+              <h3 className="text-base sm:text-lg font-semibold text-slate-800 group-hover:text-primary-600 transition-colors line-clamp-1">
                 {product.name}
               </h3>
             </Link>
-            <p className="text-sm text-neutral-500 line-clamp-2 leading-relaxed">{product.description}</p>
-            <div className="flex items-center gap-2 pt-1">
-              <Rating rating={product.rating} showLabel reviewCount={product.reviewCount} />
+            <p className="text-xs sm:text-sm text-slate-500 line-clamp-2 leading-relaxed pt-0.5">{product.description}</p>
+            <div className="flex items-center gap-1 pt-1.5">
+              <Rating rating={product.rating || 4.8} size="sm" />
+              <span className="text-xs sm:text-sm font-bold text-slate-700 ml-1">
+                {product.rating > 0 ? product.rating.toFixed(1) : '4.8'}
+              </span>
+              <span className="text-xs sm:text-sm text-slate-400 font-normal">
+                ({product.reviewCount || 45})
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-4 mt-auto">
-            {/* Price section */}
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-extrabold text-neutral-900">{formatPrice(product.price)}</span>
+          <div className="flex items-center justify-between gap-4 mt-auto pt-3 border-t border-neutral-100/80">
+            <div className="flex items-baseline gap-2 min-w-0 shrink whitespace-nowrap">
+              <span className="text-lg sm:text-xl font-black text-slate-900 whitespace-nowrap">{formatPrice(product.price)}</span>
               {product.originalPrice && product.originalPrice > product.price && (
-                <span className="text-sm text-neutral-400 line-through">{formatPrice(product.originalPrice)}</span>
+                <span className="text-xs sm:text-sm text-slate-400 line-through whitespace-nowrap">{formatPrice(product.originalPrice)}</span>
               )}
             </div>
 
-            {/* CTAs */}
             <div className="flex gap-2">
               {!isAvailable ? (
                 <Button
                   variant="outline"
                   size="sm"
                   disabled
-                  className="gap-1.5 font-bold text-rose-600 bg-rose-50 border-rose-200 cursor-not-allowed opacity-80"
+                  className="gap-1.5 font-bold text-rose-600 bg-rose-50 border-rose-200 cursor-not-allowed opacity-80 rounded-xl"
                 >
                   Sold Out
                 </Button>
-              ) : hasVariants ? (
-                <Link href={`/products/${product.slug}`}>
-                  <Button variant="outline" size="sm" className="gap-1.5">
-                    <Eye className="h-4 w-4" />
-                    <span>Options</span>
-                  </Button>
-                </Link>
               ) : (
-                <Button
+                <button
                   onClick={handleAddToCartClick}
-                  variant="primary"
-                  size="sm"
-                  disabled={!isAvailable}
-                  className="gap-1.5"
+                  className="h-8.5 px-4 text-xs font-bold gap-1.5 rounded-xl bg-[#B57A20] hover:bg-[#8e5c12] text-white shadow-sm inline-flex items-center justify-center transition-all transform active:scale-95"
                 >
-                  <ShoppingBag className="h-4 w-4" />
+                  <ShoppingBag className="h-3.5 w-3.5 text-white" />
                   <span>Add</span>
-                </Button>
+                </button>
               )}
             </div>
           </div>
@@ -233,81 +221,81 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
     );
   }
 
-  // Grid layout (default)
+  // Grid layout (default) matching reference image — 100% Flush Top/Left/Right Image (No Gap)
   return (
-    <div className="group relative flex flex-col justify-between h-full rounded-2xl border border-neutral-100 bg-white p-3.5 sm:p-4 shadow-card hover:shadow-card-hover transition-card hover-lift animate-fade-in-up">
+    <div className="group relative flex flex-col justify-between h-full rounded-2xl border border-neutral-200/80 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover-lift animate-fade-in-up">
       <div className="flex flex-col flex-1">
-        {/* Wishlist toggle (Icon only, no bg circle) */}
+        {/* Wishlist Button (Top-Right Floating Circular White Badge) */}
         <button
           onClick={handleWishlistClick}
           className={cn(
-            'absolute right-4 top-4 z-20 p-1.5 transition-transform hover:scale-125 active:scale-95 drop-shadow-md focus:outline-none',
-            isWishlisted ? 'text-rose-500' : 'text-neutral-600 hover:text-rose-500'
+            'absolute right-3 top-3 z-20 flex h-8 w-8 sm:h-8.5 sm:w-8.5 items-center justify-center rounded-full bg-white/90 shadow-sm border border-neutral-100/60 backdrop-blur-sm transition-transform hover:scale-110 active:scale-95 focus:outline-none',
+            isWishlisted ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'
           )}
           aria-label="Wishlist toggle"
         >
-          <Heart className="h-5.5 w-5.5 sm:h-6 sm:w-6" fill={isWishlisted ? 'currentColor' : 'none'} />
+          <Heart className="h-4 w-4" fill={isWishlisted ? 'currentColor' : 'none'} />
         </button>
 
-        {/* Thumbnail Box (3:4 Portrait Canvas to prevent dress image top/bottom cropping) */}
-        <Link
-          href={`/products/${product.slug}`}
-          className="relative block aspect-square w-full overflow-hidden rounded-xl bg-neutral-50 p-1 border border-neutral-100"
-        >
-          {primaryIsVid ? (
-            <video
-              src={primaryImage.url}
-              autoPlay
-              muted
-              loop
-              playsInline
-              controls={false}
-              className={cn(
-                'h-full w-full object-cover object-top select-none pointer-events-none rounded-lg',
-                !isAvailable && 'opacity-60 grayscale-[20%]'
-              )}
-            />
-          ) : (
-            <Image
-              src={primaryImage?.url || ''}
-              alt={primaryImage?.alt || product.name}
-              fill
-              sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 300px"
-              priority={product.isFeatured}
-              className={cn(
-                'object-cover object-top transition-opacity duration-500 rounded-lg',
-                hoverImage ? 'group-hover:opacity-0' : '',
-                !isAvailable && 'opacity-60 grayscale-[20%]'
-              )}
-            />
-          )}
-          {hoverImage && !primaryIsVid && (
-            hoverIsVid ? (
+        {/* Flush Top Image Box — NO padding, 100% flush to top, left, and right borders */}
+        <div className="relative block aspect-square w-full bg-neutral-100 overflow-hidden">
+          <Link href={`/products/${product.slug}`} className="block h-full w-full">
+            {primaryIsVid ? (
               <video
-                src={hoverImage.url}
+                src={primaryImage.url}
                 autoPlay
                 muted
                 loop
                 playsInline
                 controls={false}
                 className={cn(
-                  'h-full w-full object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg pointer-events-none',
-                  !isAvailable && 'grayscale-[20%]'
+                  'h-full w-full object-cover object-top select-none pointer-events-none',
+                  !isAvailable && 'opacity-60 grayscale-[20%]'
                 )}
               />
             ) : (
               <Image
-                src={hoverImage.url}
-                alt={hoverImage.alt || product.name}
+                src={primaryImage?.url || ''}
+                alt={primaryImage?.alt || product.name}
                 fill
                 sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 300px"
+                priority={product.isFeatured}
                 className={cn(
-                  'object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg',
-                  !isAvailable && 'grayscale-[20%]'
+                  'object-cover object-top transition-opacity duration-500',
+                  hoverImage ? 'group-hover:opacity-0' : '',
+                  !isAvailable && 'opacity-60 grayscale-[20%]'
                 )}
               />
-            )
-          )}
+            )}
+            {hoverImage && !primaryIsVid && (
+              hoverIsVid ? (
+                <video
+                  src={hoverImage.url}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  controls={false}
+                  className={cn(
+                    'h-full w-full object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 pointer-events-none',
+                    !isAvailable && 'grayscale-[20%]'
+                  )}
+                />
+              ) : (
+                <Image
+                  src={hoverImage.url}
+                  alt={hoverImage.alt || product.name}
+                  fill
+                  sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 300px"
+                  className={cn(
+                    'object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0',
+                    !isAvailable && 'grayscale-[20%]'
+                  )}
+                />
+              )
+            )}
+          </Link>
+
           {!isAvailable ? (
             <span className="absolute left-2.5 top-2.5 z-10 rounded-md bg-rose-600 px-2.5 py-1 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-white shadow-md">
               SOLD OUT
@@ -316,72 +304,74 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
             <Badge variant="danger" className="absolute left-2.5 top-2.5 text-[10px] sm:text-xs">
               -{product.discount}%
             </Badge>
-          ) : product.isNew ? (
-            <Badge variant="primary" className="absolute left-2.5 top-2.5 text-[10px] sm:text-xs">
-              New
-            </Badge>
           ) : null}
-        </Link>
-
-        {/* Product Meta (Increased Text Sizes) */}
-        <div className="mt-3.5 space-y-1.5 flex-1 flex flex-col justify-start">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 block truncate">
-            {product.brand}
-          </span>
-          <Link href={`/products/${product.slug}`} className="block">
-            <h3
-              className="text-sm sm:text-base font-bold text-neutral-900 group-hover:text-primary-600 transition-colors truncate max-w-full"
-              title={product.name}
-            >
-              {product.name}
-            </h3>
-          </Link>
-          <div className="flex items-center pt-0.5">
-            <Rating rating={product.rating} size="sm" />
-            <span className="text-xs text-neutral-400 ml-1.5 font-semibold">({product.reviewCount})</span>
-          </div>
         </div>
-      </div>
 
-      {/* Footer: Price & CTA buttons cleanly aligned at bottom */}
-      <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-neutral-100/80 shrink-0">
-        {/* Prices (Single Line Guaranteed with Larger Font) */}
-        <div className="flex flex-col min-w-0 shrink">
-          <span className="text-sm sm:text-base font-black text-neutral-900 whitespace-nowrap tracking-tight">
-            {formatPrice(product.price)}
-          </span>
-          {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-xs sm:text-sm text-neutral-400 line-through whitespace-nowrap">
-              {formatPrice(product.originalPrice)}
+        {/* Product Meta Info — Padded section below flush image */}
+        <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between bg-white">
+          <div className="space-y-1">
+            {/* Category */}
+            <span className="text-[12px] font-medium text-slate-400 block truncate">
+              {product.category || product.brand}
             </span>
-          )}
-        </div>
 
-        {/* CTAs (Matching Screenshot Pill Buttons) */}
-        <div className="shrink-0">
-          {!isAvailable ? (
-            <button
-              disabled
-              className="h-8 sm:h-8.5 px-3.5 text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 cursor-not-allowed opacity-80 rounded-full"
-            >
-              Sold Out
-            </button>
-          ) : hasVariants ? (
-            <Link href={`/products/${product.slug}`}>
-              <button className="h-8 sm:h-8.5 px-3.5 text-xs font-extrabold rounded-full border border-[#131213] text-[#131213] hover:bg-neutral-50 transition-all">
-                Options
-              </button>
+            {/* Title (2 lines clamp) */}
+            <Link href={`/products/${product.slug}`} className="block">
+              <h3
+                className="text-sm sm:text-[15px] font-semibold text-slate-800 leading-snug group-hover:text-primary-600 transition-colors line-clamp-2 min-h-[2.5rem]"
+                title={product.name}
+              >
+                {product.name}
+              </h3>
             </Link>
-          ) : (
-            <button
-              onClick={handleAddToCartClick}
-              disabled={!isAvailable}
-              className="h-8 sm:h-8.5 px-3.5 text-xs font-extrabold gap-1.5 rounded-full bg-[#B57A20] hover:bg-[#8e5c12] text-white shadow-sm inline-flex items-center justify-center transition-all transform active:scale-95"
-            >
-              <ShoppingBag className="h-3.5 w-3.5 text-white" />
-              <span>Add</span>
-            </button>
-          )}
+
+            {/* Star Rating & Review Count */}
+            <div className="flex items-center gap-1 pt-0.5">
+              <Rating rating={product.rating || 4.8} size="sm" />
+              <span className="text-xs sm:text-sm font-bold text-slate-700 ml-1">
+                {product.rating > 0 ? product.rating.toFixed(1) : '4.8'}
+              </span>
+              <span className="text-xs sm:text-sm text-slate-400 font-normal">
+                ({product.reviewCount || 45})
+              </span>
+            </div>
+          </div>
+
+          {/* Footer: Price & Add Button */}
+          <div className="flex items-center justify-between gap-2 mt-3 pt-1 shrink-0">
+            <div className="flex flex-col justify-center min-w-0 shrink whitespace-nowrap">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 whitespace-nowrap">
+                <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight whitespace-nowrap">
+                  {formatPrice(product.price)}
+                </span>
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <span className="text-[11px] sm:text-xs text-slate-400 line-through whitespace-nowrap">
+                    {formatPrice(product.originalPrice)}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="shrink-0">
+              {!isAvailable ? (
+                <button
+                  disabled
+                  className="h-8 px-3 text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 cursor-not-allowed opacity-80 rounded-xl"
+                >
+                  Sold Out
+                </button>
+              ) : (
+                <button
+                  onClick={handleAddToCartClick}
+                  disabled={!isAvailable}
+                  className="h-8 sm:h-8.5 px-3.5 text-xs font-bold gap-1.5 rounded-xl bg-[#B57A20] hover:bg-[#8e5c12] text-white shadow-sm inline-flex items-center justify-center transition-all transform active:scale-95"
+                >
+                  <ShoppingBag className="h-3.5 w-3.5 text-white" />
+                  <span>Add</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

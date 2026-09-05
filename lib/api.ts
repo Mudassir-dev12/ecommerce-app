@@ -157,14 +157,14 @@ export async function getProducts(
         query = query.order('rating', { ascending: false });
         break;
       case 'newest':
-        query = query.order('created_at', { ascending: false });
+        query = query.order('is_new', { ascending: false }).order('created_at', { ascending: false });
         break;
       case 'popularity':
         query = query.order('review_count', { ascending: false });
         break;
       case 'featured':
       default:
-        query = query.order('is_featured', { ascending: false });
+        query = query.order('is_featured', { ascending: false }).order('created_at', { ascending: false });
         break;
     }
 
@@ -189,7 +189,7 @@ export async function getProducts(
         productMap.set(p.id, p);
       }
 
-      const mergedProducts = Array.from(productMap.values());
+      const mergedProducts = sortProductsList(Array.from(productMap.values()), sort);
 
       if (!filters.category && !filters.search && filters.minPrice === undefined && filters.maxPrice === undefined) {
         localProductsStore = mergedProducts;
@@ -222,6 +222,7 @@ export async function getProducts(
     result = result.filter((p) => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));
   }
 
+  result = sortProductsList(result, sort);
   const total = result.length;
   const paginated = result.slice((page - 1) * perPage, page * perPage);
 
@@ -229,6 +230,31 @@ export async function getProducts(
     products: paginated,
     pagination: { page, perPage, total, totalPages: Math.max(1, Math.ceil(total / perPage)) },
   };
+}
+
+export function sortProductsList(list: Product[], sort: SortOption): Product[] {
+  const arr = [...list];
+  switch (sort) {
+    case 'price-asc':
+      return arr.sort((a, b) => a.price - b.price);
+    case 'price-desc':
+      return arr.sort((a, b) => b.price - a.price);
+    case 'rating':
+      return arr.sort((a, b) => b.rating - a.rating);
+    case 'newest':
+      return arr.sort((a, b) => {
+        if (a.isNew !== b.isNew) return a.isNew ? -1 : 1;
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      });
+    case 'popularity':
+      return arr.sort((a, b) => b.reviewCount - a.reviewCount);
+    case 'featured':
+    default:
+      return arr.sort((a, b) => {
+        if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      });
+  }
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
@@ -244,17 +270,34 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 
 export async function getFeaturedProducts(limit = 8): Promise<Product[]> {
   try {
-    const { data, error } = await supabase.from('products').select('*').eq('is_featured', true).limit(limit);
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('is_featured', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(limit);
     if (!error && data) {
       if (data.length > 0) return data.map(mapProduct);
-      const { data: allData, error: allErr } = await supabase.from('products').select('*').limit(limit);
-      if (!allErr && allData) return allData.map(mapProduct);
     }
   } catch (e) {}
   const list = getLocalProducts();
-  const featured = list.filter((p) => p.isFeatured);
-  if (featured.length > 0) return featured.slice(0, limit);
-  return list.slice(0, limit);
+  return sortProductsList(list, 'featured').slice(0, limit);
+}
+
+export async function getNewArrivals(limit = 8): Promise<Product[]> {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('is_new', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (!error && data) {
+      if (data.length > 0) return data.map(mapProduct);
+    }
+  } catch (e) {}
+  const list = getLocalProducts();
+  return sortProductsList(list, 'newest').slice(0, limit);
 }
 
 export async function getBestSellers(limit = 8): Promise<Product[]> {

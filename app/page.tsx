@@ -12,17 +12,24 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function HomePage() {
-  const [productsRes, categories] = await Promise.all([
-    getProducts({}, 'featured', 1, 30),
+  const [featuredRes, newestRes, categories] = await Promise.all([
+    getProducts({}, 'featured', 1, 20),
+    getProducts({}, 'newest', 1, 10),
     getCategories(),
   ]);
 
-  const products = productsRes.products || [];
+  const featuredProducts = featuredRes.products || [];
+  const newestProducts = newestRes.products || [];
 
-  // Group dynamic products for distinct category sliders (strict non-overlapping slices)
-  const section1Products = products.slice(0, 5);
-  const section2Products = products.slice(5, 10);
-  const section3Products = products.slice(10, 15);
+  // First two sections show Featured Products (distinct non-overlapping slices if available)
+  const section1Products = featuredProducts.slice(0, 5);
+  const section2Products =
+    featuredProducts.length > 5
+      ? featuredProducts.slice(5, 10)
+      : featuredProducts.slice(0, 5);
+
+  // Last section shows New Arrivals
+  const section3Products = newestProducts.slice(0, 5);
 
   return (
     <div className="space-y-16 pb-16">
@@ -31,11 +38,13 @@ export default async function HomePage() {
       <HeroScrollBanners />
 
 
-      {/* ─── Product Carousel #1 (After Categories) ───────────────────────── */}
+      {/* ─── Product Carousel #1: Featured Products ───────────────────────── */}
       {section1Products.length > 0 && (
         <ProductCarouselSection
-          title="Premium Women's 3-Piece Suit Embroidery"
+          title="Featured Products"
+          subtitle="Handpicked premium styles & top picks"
           categorySlug={section1Products[0]?.categorySlug || 'all'}
+          viewAllHref="/products?sort=featured"
           products={section1Products}
           autoPlayInterval={3500}
         />
@@ -57,11 +66,13 @@ export default async function HomePage() {
         </Link>
       </section>
 
-      {/* ─── Product Carousel #2 (After Banner 1) ───────────────────────── */}
+      {/* ─── Product Carousel #2: Featured Collection ───────────────────────── */}
       {section2Products.length > 0 && (
         <ProductCarouselSection
-          title="Maxi 3-Piece Suit"
+          title="Featured Collection"
+          subtitle="Exclusive high-demand fashion & trending items"
           categorySlug={section2Products[0]?.categorySlug || 'all'}
+          viewAllHref="/products?sort=featured"
           products={section2Products}
           autoPlayInterval={4000}
         />
@@ -82,11 +93,13 @@ export default async function HomePage() {
         </Link>
       </section>
 
-      {/* ─── Product Carousel #3 (After Banner 2) ───────────────────────── */}
+      {/* ─── Product Carousel #3: New Arrivals ───────────────────────── */}
       {section3Products.length > 0 && (
         <ProductCarouselSection
-          title="Luxury Dress Collection"
+          title="New Arrivals"
+          subtitle="Fresh styles & latest additions to our store"
           categorySlug={section3Products[0]?.categorySlug || 'all'}
+          viewAllHref="/products?sort=newest"
           products={section3Products}
           autoPlayInterval={4500}
         />

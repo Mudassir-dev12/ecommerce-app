@@ -11,6 +11,7 @@ interface ProductCarouselSectionProps {
   title: string;
   subtitle?: string;
   categorySlug?: string;
+  viewAllHref?: string;
   products: Product[];
   autoPlayInterval?: number;
   isLoading?: boolean;
@@ -20,6 +21,7 @@ export function ProductCarouselSection({
   title,
   subtitle,
   categorySlug,
+  viewAllHref,
   products,
   autoPlayInterval = 2800,
   isLoading = false,
@@ -165,9 +167,9 @@ export function ProductCarouselSection({
           )}
         </div>
 
-        {categorySlug && (
+        {(viewAllHref || categorySlug) && (
           <Link
-            href={`/products?category=${categorySlug}`}
+            href={viewAllHref || `/products?category=${categorySlug}`}
             className="group flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-[#B57A20] hover:text-[#8e5c12] transition-colors"
           >
             <span>Explore Collection</span>
