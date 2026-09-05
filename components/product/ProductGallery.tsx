@@ -2,9 +2,9 @@
 
 import * as React from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, Video } from 'lucide-react';
 import type { Product, ProductImage } from '@/types';
-import { cn } from '@/lib/utils';
+import { cn, isVideoUrl } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import { useToast } from '@/components/ui/Toast';
 
@@ -47,6 +47,22 @@ export function ProductGallery({
   const [isZoomed, setIsZoomed] = React.useState(false);
   const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
 
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  const safeIndex = Math.min(activeIndex, (images?.length || 1) - 1);
+  const activeImage = images?.[safeIndex];
+  const activeIsVideo = activeImage ? isVideoUrl(activeImage.url, activeImage.isVideo) : false;
+
+  // Guarantee video auto-play, muted audio, and hidden controls
+  React.useEffect(() => {
+    if (activeIsVideo && videoRef.current) {
+      videoRef.current.muted = true;
+      videoRef.current.play().catch(() => {
+        // Handle autoplay policy restriction if any
+      });
+    }
+  }, [activeIsVideo, safeIndex]);
+
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -72,7 +88,7 @@ export function ProductGallery({
 
   if (!images || images.length === 0) {
     return (
-      <div className="aspect-[3/4] w-full rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-400">
+      <div className="aspect-square w-full rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-400">
         No image available
       </div>
     );
@@ -95,13 +111,10 @@ export function ProductGallery({
     setMousePos({ x, y });
   };
 
-  const safeIndex = Math.min(activeIndex, images.length - 1);
-  const activeImage = images[safeIndex];
-
   return (
     <div className="flex flex-col gap-4 w-full">
 
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-md border border-neutral-200 bg-white">
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-md border border-neutral-200 bg-black/5">
 
         {/* Floating Wishlist Heart Icon */}
         {product && (
@@ -118,32 +131,47 @@ export function ProductGallery({
           </button>
         )}
 
-        {/* Zoomable Image frame */}
-        <div
-          className="relative h-full w-full cursor-zoom-in overflow-hidden"
-          onMouseEnter={() => setIsZoomed(true)}
-          onMouseLeave={() => setIsZoomed(false)}
-          onMouseMove={handleMouseMove}
-        >
-          <Image
-            src={activeImage.url}
-            alt={activeImage.alt || 'Product image'}
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, 700px"
-            className={cn(
-              'object-cover object-top select-none transition-transform duration-200',
-              { 'scale-150 duration-75': isZoomed }
-            )}
-            style={
-              isZoomed
-                ? { transformOrigin: `${mousePos.x}% ${mousePos.y}%` }
-                : undefined
-            }
-          />
-        </div>
+        {/* Media Frame (Video vs Image) */}
+        {activeIsVideo ? (
+          <div className="relative h-full w-full overflow-hidden bg-black flex items-center justify-center">
+            <video
+              ref={videoRef}
+              src={activeImage.url}
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls={false}
+              className="h-full w-full object-cover object-center select-none pointer-events-none"
+            />
+          </div>
+        ) : (
+          <div
+            className="relative h-full w-full cursor-zoom-in overflow-hidden"
+            onMouseEnter={() => setIsZoomed(true)}
+            onMouseLeave={() => setIsZoomed(false)}
+            onMouseMove={handleMouseMove}
+          >
+            <Image
+              src={activeImage.url}
+              alt={activeImage.alt || 'Product image'}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 700px"
+              className={cn(
+                'object-cover object-top select-none transition-transform duration-200',
+                { 'scale-150 duration-75': isZoomed }
+              )}
+              style={
+                isZoomed
+                  ? { transformOrigin: `${mousePos.x}% ${mousePos.y}%` }
+                  : undefined
+              }
+            />
+          </div>
+        )}
 
-        {/* Carousel controls (only if multiple images) */}
+        {/* Carousel controls (only if multiple images/videos) */}
         {images.length > 1 && (
           <>
             <button
@@ -167,28 +195,49 @@ export function ProductGallery({
       {/* Thumbnails strip */}
       {images.length > 1 && (
         <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
-          {images.map((img, idx) => (
-            <button
-              key={img.id || idx}
-              onClick={() => setActiveIndex(idx)}
-              className={cn(
-                'relative aspect-[3/4] h-20 sm:h-24 overflow-hidden rounded-xl border-2 transition-all shrink-0 hover:opacity-95',
-                safeIndex === idx
-                  ? 'border-[#B57A20] scale-[1.03] shadow-md ring-1 ring-[#B57A20]'
-                  : 'border-neutral-200 opacity-75'
-              )}
-            >
-              <Image
-                src={img.url}
-                alt={img.alt || 'Thumbnail'}
-                fill
-                sizes="96px"
-                className="object-cover object-top"
-              />
-            </button>
-          ))}
+          {images.map((img, idx) => {
+            const isVid = isVideoUrl(img.url, img.isVideo);
+            return (
+              <button
+                key={img.id || idx}
+                onClick={() => setActiveIndex(idx)}
+                className={cn(
+                  'relative aspect-square h-20 sm:h-24 overflow-hidden rounded-xl border-2 transition-all shrink-0 hover:opacity-95 bg-black/10',
+                  safeIndex === idx
+                    ? 'border-[#B57A20] scale-[1.03] shadow-md ring-1 ring-[#B57A20]'
+                    : 'border-neutral-200 opacity-75'
+                )}
+              >
+                {isVid ? (
+                  <>
+                    <video
+                      src={img.url}
+                      muted
+                      loop
+                      playsInline
+                      className="h-full w-full object-cover object-center pointer-events-none"
+                    />
+                    <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                      <div className="bg-[#B57A20] text-white p-1 rounded-full shadow">
+                        <Video className="h-3.5 w-3.5" />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <Image
+                    src={img.url}
+                    alt={img.alt || 'Thumbnail'}
+                    fill
+                    sizes="96px"
+                    className="object-cover object-top"
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
+

@@ -74,3 +74,12 @@ export function getInitials(name: string): string {
 export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/** Check if a URL or flag corresponds to a video file */
+export function isVideoUrl(url?: string, isVideoFlag?: boolean): boolean {
+  if (isVideoFlag === true) return true;
+  if (!url) return false;
+  const cleanUrl = url.split('?')[0].toLowerCase();
+  return /\.(mp4|webm|mov|m4v|avi|ogv|mkv)$/i.test(cleanUrl) || cleanUrl.includes('video/');
+}
+

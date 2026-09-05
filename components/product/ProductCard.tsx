@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, ShoppingBag, Eye } from 'lucide-react';
 import type { Product } from '@/types';
-import { cn, formatPrice } from '@/lib/utils';
+import { cn, formatPrice, isVideoUrl } from '@/lib/utils';
 import { useStore } from '@/lib/store';
 import { useToast } from '../ui/Toast';
 import { Rating } from '../ui/Rating';
@@ -78,6 +78,8 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
   // Image calculations
   const primaryImage = product.images.find((i) => i.isPrimary) || product.images[0];
   const hoverImage = product.images.length > 1 ? product.images[1] : null;
+  const primaryIsVid = primaryImage ? isVideoUrl(primaryImage.url, primaryImage.isVideo) : false;
+  const hoverIsVid = hoverImage ? isVideoUrl(hoverImage.url, hoverImage.isVideo) : false;
 
   if (layout === 'list') {
     return (
@@ -98,31 +100,61 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
         {/* Thumbnail Box */}
         <Link
           href={`/products/${product.slug}`}
-          className="relative aspect-[3/4] h-48 w-36 sm:w-40 shrink-0 overflow-hidden rounded-xl bg-neutral-50 p-1 flex items-center justify-center border border-neutral-100"
+          className="relative aspect-square h-48 w-36 sm:w-40 shrink-0 overflow-hidden rounded-xl bg-neutral-50 p-1 flex items-center justify-center border border-neutral-100"
         >
-          <Image
-            src={primaryImage?.url || ''}
-            alt={primaryImage?.alt || product.name}
-            fill
-            sizes="(max-w-640px) 100vw, 160px"
-            priority={product.isFeatured}
-            className={cn(
-              'object-cover object-top transition-opacity duration-500 rounded-lg',
-              hoverImage ? 'group-hover:opacity-0' : '',
-              !isAvailable && 'opacity-60 grayscale-[20%]'
-            )}
-          />
-          {hoverImage && (
-            <Image
-              src={hoverImage.url}
-              alt={hoverImage.alt || product.name}
-              fill
-              sizes="(max-w-640px) 100vw, 160px"
+          {primaryIsVid ? (
+            <video
+              src={primaryImage.url}
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls={false}
               className={cn(
-                'object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg',
-                !isAvailable && 'grayscale-[20%]'
+                'h-full w-full object-cover object-top select-none pointer-events-none rounded-lg',
+                !isAvailable && 'opacity-60 grayscale-[20%]'
               )}
             />
+          ) : (
+            <Image
+              src={primaryImage?.url || ''}
+              alt={primaryImage?.alt || product.name}
+              fill
+              sizes="(max-w-640px) 100vw, 160px"
+              priority={product.isFeatured}
+              className={cn(
+                'object-cover object-top transition-opacity duration-500 rounded-lg',
+                hoverImage ? 'group-hover:opacity-0' : '',
+                !isAvailable && 'opacity-60 grayscale-[20%]'
+              )}
+            />
+          )}
+          {hoverImage && !primaryIsVid && (
+            hoverIsVid ? (
+              <video
+                src={hoverImage.url}
+                autoPlay
+                muted
+                loop
+                playsInline
+                controls={false}
+                className={cn(
+                  'h-full w-full object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg pointer-events-none',
+                  !isAvailable && 'grayscale-[20%]'
+                )}
+              />
+            ) : (
+              <Image
+                src={hoverImage.url}
+                alt={hoverImage.alt || product.name}
+                fill
+                sizes="(max-w-640px) 100vw, 160px"
+                className={cn(
+                  'object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg',
+                  !isAvailable && 'grayscale-[20%]'
+                )}
+              />
+            )
           )}
           {!isAvailable ? (
             <span className="absolute left-3 top-3 z-10 rounded-md bg-rose-600 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white shadow-md">
@@ -220,31 +252,61 @@ export function ProductCard({ product, layout = 'grid' }: ProductCardProps) {
         {/* Thumbnail Box (3:4 Portrait Canvas to prevent dress image top/bottom cropping) */}
         <Link
           href={`/products/${product.slug}`}
-          className="relative block aspect-[3/4] w-full overflow-hidden rounded-xl bg-neutral-50 p-1 border border-neutral-100"
+          className="relative block aspect-square w-full overflow-hidden rounded-xl bg-neutral-50 p-1 border border-neutral-100"
         >
-          <Image
-            src={primaryImage?.url || ''}
-            alt={primaryImage?.alt || product.name}
-            fill
-            sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 300px"
-            priority={product.isFeatured}
-            className={cn(
-              'object-cover object-top transition-opacity duration-500 rounded-lg',
-              hoverImage ? 'group-hover:opacity-0' : '',
-              !isAvailable && 'opacity-60 grayscale-[20%]'
-            )}
-          />
-          {hoverImage && (
-            <Image
-              src={hoverImage.url}
-              alt={hoverImage.alt || product.name}
-              fill
-              sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 300px"
+          {primaryIsVid ? (
+            <video
+              src={primaryImage.url}
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls={false}
               className={cn(
-                'object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg',
-                !isAvailable && 'grayscale-[20%]'
+                'h-full w-full object-cover object-top select-none pointer-events-none rounded-lg',
+                !isAvailable && 'opacity-60 grayscale-[20%]'
               )}
             />
+          ) : (
+            <Image
+              src={primaryImage?.url || ''}
+              alt={primaryImage?.alt || product.name}
+              fill
+              sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 300px"
+              priority={product.isFeatured}
+              className={cn(
+                'object-cover object-top transition-opacity duration-500 rounded-lg',
+                hoverImage ? 'group-hover:opacity-0' : '',
+                !isAvailable && 'opacity-60 grayscale-[20%]'
+              )}
+            />
+          )}
+          {hoverImage && !primaryIsVid && (
+            hoverIsVid ? (
+              <video
+                src={hoverImage.url}
+                autoPlay
+                muted
+                loop
+                playsInline
+                controls={false}
+                className={cn(
+                  'h-full w-full object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg pointer-events-none',
+                  !isAvailable && 'grayscale-[20%]'
+                )}
+              />
+            ) : (
+              <Image
+                src={hoverImage.url}
+                alt={hoverImage.alt || product.name}
+                fill
+                sizes="(max-w-768px) 50vw, (max-w-1200px) 33vw, 300px"
+                className={cn(
+                  'object-cover object-top opacity-0 group-hover:opacity-100 transition-opacity duration-500 absolute inset-0 rounded-lg',
+                  !isAvailable && 'grayscale-[20%]'
+                )}
+              />
+            )
           )}
           {!isAvailable ? (
             <span className="absolute left-2.5 top-2.5 z-10 rounded-md bg-rose-600 px-2.5 py-1 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-white shadow-md">

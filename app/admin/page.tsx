@@ -34,6 +34,7 @@ import {
   DollarSign,
   Layers,
   ArrowLeft,
+  ArrowRight,
   ShoppingBag,
   Clock,
   Truck,
@@ -44,13 +45,15 @@ import {
   CheckCircle,
   Upload,
   Image as ImageIcon,
+  Video,
   Lock,
   LogOut,
   KeyRound,
   Mail,
   EyeOff,
 } from 'lucide-react';
-import { formatPrice, formatDate } from '@/lib/utils';
+import { formatPrice, formatDate, isVideoUrl } from '@/lib/utils';
+
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -248,12 +251,14 @@ export default function AdminDashboardPage() {
     if (files.length === 0) return;
 
     for (const file of files) {
-      if (!file.type.startsWith('image/')) {
-        showToast(`"${file.name}" is not a valid image file`, 'error');
+      const isImg = file.type.startsWith('image/');
+      const isVid = file.type.startsWith('video/') || /\.(mp4|webm|mov|m4v|avi|ogv)$/i.test(file.name);
+      if (!isImg && !isVid) {
+        showToast(`"${file.name}" is not a valid image or video file`, 'error');
         return;
       }
-      if (file.size > 10 * 1024 * 1024) {
-        showToast(`"${file.name}" exceeds 10MB limit`, 'error');
+      if (file.size > 50 * 1024 * 1024) {
+        showToast(`"${file.name}" exceeds 50MB limit`, 'error');
         return;
       }
     }
@@ -266,9 +271,9 @@ export default function AdminDashboardPage() {
         ...prev,
         imageUrls: [...prev.imageUrls, ...uploadedUrls],
       }));
-      showToast(`${files.length} image(s) uploaded successfully!`);
+      showToast(`${files.length} file(s) uploaded successfully!`);
     } catch (err: any) {
-      showToast('Failed to upload image(s) to Supabase Storage', 'error');
+      showToast('Failed to upload file(s) to Supabase Storage', 'error');
     } finally {
       setUploadingImage(false);
       e.target.value = '';
@@ -282,7 +287,7 @@ export default function AdminDashboardPage() {
       imageUrls: [...prev.imageUrls, newUrlInput.trim()],
     }));
     setNewUrlInput('');
-    showToast('Image URL added!');
+    showToast('Media URL added!');
   };
 
   const handleRemoveImage = (index: number) => {
@@ -290,6 +295,21 @@ export default function AdminDashboardPage() {
       ...prev,
       imageUrls: prev.imageUrls.filter((_, idx) => idx !== index),
     }));
+  };
+
+  const handleMoveMedia = (index: number, direction: 'left' | 'right') => {
+    setFormData((prev) => {
+      const updated = [...prev.imageUrls];
+      const targetIndex = direction === 'left' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= updated.length) return prev;
+      const temp = updated[index];
+      updated[index] = updated[targetIndex];
+      updated[targetIndex] = temp;
+      return {
+        ...prev,
+        imageUrls: updated,
+      };
+    });
   };
 
   const handleMakePrimary = (index: number) => {
@@ -301,8 +321,9 @@ export default function AdminDashboardPage() {
         imageUrls: [selected, ...updated],
       };
     });
-    showToast('Image set as primary!');
+    showToast('Media set as primary!');
   };
+
 
   const handleOpenAddModal = () => {
     setEditingProduct(null);
@@ -473,8 +494,9 @@ export default function AdminDashboardPage() {
         images: finalUrls.map((url, idx) => ({
           id: `img-${Date.now()}-${idx}`,
           url,
-          alt: `${formData.name} - Image ${idx + 1}`,
+          alt: `${formData.name} - Media ${idx + 1}`,
           isPrimary: idx === 0,
+          isVideo: isVideoUrl(url),
         })),
       };
 
@@ -1386,14 +1408,14 @@ export default function AdminDashboardPage() {
                   />
                 </div>
 
-                {/* Product Images (Multiple Upload + Gallery) */}
+                {/* Product Images & Videos Gallery (Multiple Upload + Gallery) */}
                 <div className="md:col-span-2 space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider">
-                      Product Images Gallery ({formData.imageUrls.length}) *
+                      Product Media Gallery ({formData.imageUrls.length}) *
                     </label>
                     <span className="text-[11px] text-neutral-500">
-                      The 1st image will be displayed as Main Cover Image
+                      The 1st media item (Position 1) will be displayed as Main Cover
                     </span>
                   </div>
 
@@ -1405,18 +1427,18 @@ export default function AdminDashboardPage() {
                         {uploadingImage ? (
                           <>
                             <RefreshCw className="w-4 h-4 animate-spin" />
-                            <span>Uploading Images to Storage...</span>
+                            <span>Uploading Media to Storage...</span>
                           </>
                         ) : (
                           <>
                             <Upload className="w-4 h-4" />
-                            <span>Choose & Upload Multiple Files</span>
+                            <span>Upload Images & Videos</span>
                           </>
                         )}
                         <input
                           type="file"
                           multiple
-                          accept="image/*"
+                          accept="image/*,video/*,.mp4,.webm,.mov,.m4v,.avi,.ogv"
                           onChange={handleImageFilesChange}
                           disabled={uploadingImage}
                           className="hidden"
@@ -1425,11 +1447,11 @@ export default function AdminDashboardPage() {
 
                       <span className="text-xs text-neutral-400 font-medium hidden sm:inline">OR</span>
 
-                      {/* Manual Image URL Input */}
+                      {/* Manual Media URL Input */}
                       <div className="flex items-center gap-2 w-full sm:w-auto flex-1 max-w-md">
                         <input
                           type="url"
-                          placeholder="Paste image URL directly (e.g. https://...)"
+                          placeholder="Paste image or video URL (e.g. https://...)"
                           value={newUrlInput}
                           onChange={(e) => setNewUrlInput(e.target.value)}
                           onKeyDown={(e) => {
@@ -1451,50 +1473,99 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  {/* Multi-Image Gallery Previews */}
+                  {/* Multi-Media Gallery Previews with Positional Ordering */}
                   {formData.imageUrls.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                      {formData.imageUrls.map((url, idx) => (
-                        <div
-                          key={`${url}-${idx}`}
-                          className="relative rounded-xl bg-white border border-[#e7dccb] p-1.5 shadow-sm group space-y-1.5"
-                        >
-                          <div className="relative h-28 w-full rounded-lg overflow-hidden bg-neutral-100 border border-[#e7dccb]">
-                            <img
-                              src={url}
-                              alt={`Product Image ${idx + 1}`}
-                              className="w-full h-full object-cover object-center"
-                            />
-                            {idx === 0 && (
-                              <span className="absolute top-1.5 left-1.5 bg-[#B57A20] text-white text-[9px] font-extrabold px-2 py-0.5 rounded shadow">
-                                MAIN COVER
-                              </span>
-                            )}
-                          </div>
+                      {formData.imageUrls.map((url, idx) => {
+                        const isVid = isVideoUrl(url);
+                        return (
+                          <div
+                            key={`${url}-${idx}`}
+                            className="relative rounded-xl bg-white border border-[#e7dccb] p-2 shadow-sm group space-y-1.5"
+                          >
+                            <div className="relative h-28 w-full rounded-lg overflow-hidden bg-black/10 border border-[#e7dccb] flex items-center justify-center">
+                              {isVid ? (
+                                <video
+                                  src={url}
+                                  autoPlay
+                                  muted
+                                  loop
+                                  playsInline
+                                  controls={false}
+                                  className="w-full h-full object-cover object-center pointer-events-none"
+                                />
+                              ) : (
+                                <img
+                                  src={url}
+                                  alt={`Product Media ${idx + 1}`}
+                                  className="w-full h-full object-cover object-center"
+                                />
+                              )}
 
-                          <div className="flex items-center justify-between gap-1 pt-0.5">
-                            {idx !== 0 ? (
+                              {idx === 0 ? (
+                                <span className="absolute top-1.5 left-1.5 bg-[#B57A20] text-white text-[9px] font-extrabold px-2 py-0.5 rounded shadow">
+                                  MAIN COVER
+                                </span>
+                              ) : (
+                                <span className="absolute top-1.5 left-1.5 bg-black/60 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                                  #{idx + 1}
+                                </span>
+                              )}
+
+                              {isVid && (
+                                <span className="absolute top-1.5 right-1.5 bg-purple-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow flex items-center gap-0.5">
+                                  <Video className="w-3 h-3" /> VIDEO
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Position & Action Buttons */}
+                            <div className="flex items-center justify-between gap-1 pt-0.5 text-[10px]">
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  disabled={idx === 0}
+                                  onClick={() => handleMoveMedia(idx, 'left')}
+                                  className="p-1 rounded bg-neutral-100 hover:bg-neutral-200 border border-[#e7dccb] disabled:opacity-30 disabled:pointer-events-none"
+                                  title="Move left/earlier in position"
+                                >
+                                  <ArrowLeft className="w-3 h-3 text-[#131213]" />
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={idx === formData.imageUrls.length - 1}
+                                  onClick={() => handleMoveMedia(idx, 'right')}
+                                  className="p-1 rounded bg-neutral-100 hover:bg-neutral-200 border border-[#e7dccb] disabled:opacity-30 disabled:pointer-events-none"
+                                  title="Move right/later in position"
+                                >
+                                  <ArrowRight className="w-3 h-3 text-[#131213]" />
+                                </button>
+                              </div>
+
+                              {idx !== 0 ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleMakePrimary(idx)}
+                                  className="font-bold text-[#B57A20] hover:underline"
+                                >
+                                  Set Main
+                                </button>
+                              ) : (
+                                <span className="font-bold text-emerald-700">Primary</span>
+                              )}
+
                               <button
                                 type="button"
-                                onClick={() => handleMakePrimary(idx)}
-                                className="text-[10px] font-bold text-[#B57A20] hover:underline"
+                                onClick={() => handleRemoveImage(idx)}
+                                className="font-bold text-rose-600 hover:text-rose-800 p-0.5"
+                                title="Remove media item"
                               >
-                                Set Main
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
-                            ) : (
-                              <span className="text-[10px] font-bold text-emerald-700">Primary</span>
-                            )}
-
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveImage(idx)}
-                              className="text-[10px] font-bold text-rose-600 hover:text-rose-800 flex items-center gap-0.5"
-                            >
-                              <Trash2 className="w-3 h-3" /> Remove
-                            </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-xs text-neutral-400 italic">
